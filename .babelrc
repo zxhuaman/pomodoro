@@ -1,4 +1,4 @@
-module.exports = {
+{
   "presets": [
     "@vue/app"
   ],
@@ -7,7 +7,7 @@ module.exports = {
       "component",
       {
         "libraryName": "element-ui",
-        "styleLibraryName": "theme-chalk"
+        "styleLibraryName": "~theme"
       }
     ]
   ]
