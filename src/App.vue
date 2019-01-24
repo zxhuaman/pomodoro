@@ -1,57 +1,69 @@
 <template>
     <div id="app">
-        <nav id="nav">
-            <a href="#"><img src="./assets/logo.png" alt="logo"></a>
-            <p class="site-title">promodoro</p>
-            <el-button class="sign-in" type="primary" size="small">登陆</el-button>
-        </nav>
-        <HelloWorld msg="Welcome to Your Vue.js App"/>
+        <el-header height="48px">
+            <a class="logo" href="/"><img src="./assets/logo.png" alt="logo"></a>
+            <a href="/" class="site-title">promodoro</a>
+            <a href="/login">
+                <el-button class="sign-in" type="primary" size="small">登陆</el-button>
+            </a>
+        </el-header>
+        <router-view></router-view>
     </div>
 </template>
 
 <script>
-    import HelloWorld from './components/HelloWorld.vue'
-
     export default {
-        name: 'app',
-        components: {
-            HelloWorld
-        }
+        name: 'app'
     }
 </script>
 
 <style>
+    html {
+        height: 100%;
+    }
+
+    body {
+        height: 100%;
+        margin: 0;
+        overflow-y: hidden;
+    }
+
     #app {
         font-family: 'Avenir', Helvetica, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        text-align: center;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
     }
 
-    #nav {
-        margin-top: 1.5em;
-        text-align: left;
+    .el-header {
+        box-shadow: 0 0 4px;
     }
 
-    #nav img {
-        width: 2em;
-        margin-left: 2em;
+    .logo img {
+        position: absolute;
+        height: 1.8em;
+        margin-top: .6em;
     }
 
     .site-title {
-        position: absolute;
-        top: 0;
-        left: 3.5em;
-        height: 100%;
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         color: #2c2c2c;
-        text-align: center;
-        padding-bottom: 2em;
         font-weight: bold;
+        margin-left: 2em;
+        line-height: 48px;
+        text-decoration: none;
     }
 
     .sign-in {
         position: absolute;
+        top: .5em;
         right: 2em;
+    }
+
+    .el-main {
+        padding: 0;
     }
 </style>
