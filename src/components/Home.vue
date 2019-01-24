@@ -20,13 +20,23 @@
         <el-dialog
                 title="新建项目"
                 :visible.sync="dialogVisible"
-                width="30%"
+                width="35%"
                 :before-close="handleClose">
-            <el-input v-model="projectName" placeholder="请输入项目名"></el-input>
-            <span slot="footer" class="dialog-footer">
+            <!--<el-input v-model="projectName" placeholder="请输入项目名"></el-input>-->
+            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="80px" class="demo-ruleForm">
+                <el-form-item label="项目名称" prop="name">
+                    <el-input v-model="ruleForm.name"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitForm('ruleForm')">新建</el-button>
+                    <el-button @click="resetForm('ruleForm')">取消</el-button>
+                </el-form-item>
+            </el-form>
+
+            <!--<span slot="footer" class="dialog-footer">
                     <el-button @click="dialogVisible = false">取 消</el-button>
-                    <el-button type="primary" @click="addProject(projectName)">确 定</el-button>
-            </span>
+                    <el-button type="primary" @click="addProject(projectName)">新 建</el-button>
+            </span>-->
         </el-dialog>
         <el-main>
             <el-row>
@@ -81,6 +91,19 @@
             addProject(name) {
                 this.dialogVisible = false;
                 this.projects.push(new Project(name, 'el-icon-menu'));
+            },
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.addProject(this.ruleForm.name);
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+                this.dialogVisible = false;
             }
         },
         data: function () {
@@ -93,7 +116,16 @@
                 newProject: new Project('新建项目', 'el-icon-plus'),
                 activeIndex: 0,
                 dialogVisible: false,
-                projectName: ''
+                projectName: '',
+                ruleForm: {
+                    name: ''
+                },
+                rules: {
+                    name: [
+                        {required: true, message: '请输入项目名称', trigger: 'blur'},
+                        {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+                    ]
+                }
             }
         }
     }
