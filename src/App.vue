@@ -39,7 +39,8 @@
     }
 
     .el-header {
-        box-shadow: 0 0 4px;
+        border-bottom: 1px solid #2c2c2c;
+
     }
 
     .logo img {

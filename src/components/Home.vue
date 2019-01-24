@@ -1,7 +1,24 @@
 <template>
     <el-container>
-        <el-aside width="200px">
-
+        <el-aside width="250px">
+            <el-menu default-active="1">
+                <el-menu-item index="1">
+                    <i class="el-icon-menu"></i>
+                    <span slot="title">今天</span>
+                </el-menu-item>
+                <el-menu-item index="2">
+                    <i class="el-icon-menu"></i>
+                    <span slot="title">明天</span>
+                </el-menu-item>
+                <el-menu-item index="3">
+                    <i class="el-icon-document"></i>
+                    <span slot="title">即将到来</span>
+                </el-menu-item>
+                <el-menu-item index="4">
+                    <i class="el-icon-plus"></i>
+                    <span slot="title">新建项目</span>
+                </el-menu-item>
+            </el-menu>
         </el-aside>
         <el-main>
         </el-main>
@@ -11,6 +28,12 @@
 <script>
     export default {
         name: "Home",
+        project: [
+            {icon: 'el-icon-menu', name: '今天', time: '0.4h', count: 2},
+            {icon: 'el-icon-menu', name: '明天', time: '0.4h', count: 2},
+            {icon: 'el-icon-document', name: '即将到来', time: '0.4h', count: 2},
+            {icon: 'el-icon-plus', name: '新建项目', time: '0.4h', count: 2},
+        ],
         computed: {
             username() {
                 // 我们很快就会看到 `params` 是什么
@@ -30,11 +53,10 @@
 
 <style scoped>
     .el-container {
-        padding: 0;
-        margin: 0;
+        height: 100%;
     }
 
-    .el-col {
-        width: 100%;
+    .el-menu {
+        height: 100%;
     }
 </style>
