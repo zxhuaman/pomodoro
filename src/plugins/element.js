@@ -13,7 +13,9 @@ import {
     Dialog,
     Input,
     Form,
-    FormItem
+    FormItem,
+    Rate,
+    Card
 } from 'element-ui'
 
 Vue.use(Container)
@@ -30,3 +32,5 @@ Vue.use(Dialog)
 Vue.use(Input)
 Vue.use(Form)
 Vue.use(FormItem)
+Vue.use(Rate)
+Vue.use(Card)

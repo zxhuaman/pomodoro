@@ -1,16 +1,16 @@
 <template>
     <el-container>
         <el-aside width="250px">
-            <el-menu :default-active="projects[activeIndex].name">
-                <el-menu-item v-for="project in projects" :index="project.name">
-                    <i :class="project.icon"></i>
+            <el-menu :default-active="activeProject.name">
+                <el-menu-item v-for="project in projects" :index="project.name" @click="activeProject=project">
+                    <i class="el-icon-menu"></i>
                     <span slot="title">
                         {{project.name}}
                         <el-badge class="mark" :value="project.pending" :hidden="project.pending===0"/>
                     </span>
                 </el-menu-item>
-                <el-menu-item @click="dialogVisible=true">
-                    <i :class="newProject.icon"></i>
+                <el-menu-item @click="dialogVisible=true" :index="newProject.name">
+                    <i class="el-icon-plus"></i>
                     <span slot="title">
                         {{newProject.name}}
                     </span>
@@ -20,52 +20,77 @@
         <el-dialog
                 title="新建项目"
                 :visible.sync="dialogVisible"
-                width="35%"
-                :before-close="handleClose">
-            <!--<el-input v-model="projectName" placeholder="请输入项目名"></el-input>-->
-            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="80px" class="demo-ruleForm">
+                width="35%">
+            <el-form :model="addProjectForm"
+                     :rules="addProjectRules"
+                     ref="addProjectForm"
+                     label-width="80px">
                 <el-form-item label="项目名称" prop="name">
-                    <el-input v-model="ruleForm.name"></el-input>
+                    <el-input v-model="addProjectForm.name"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="submitForm('ruleForm')">新建</el-button>
-                    <el-button @click="resetForm('ruleForm')">取消</el-button>
+                    <el-button type="primary" @click="submitForm('addProjectForm')">新建</el-button>
+                    <el-button @click="resetForm('addProjectForm')">取消</el-button>
                 </el-form-item>
             </el-form>
 
-            <!--<span slot="footer" class="dialog-footer">
-                    <el-button @click="dialogVisible = false">取 消</el-button>
-                    <el-button type="primary" @click="addProject(projectName)">新 建</el-button>
-            </span>-->
         </el-dialog>
         <el-main>
-            <el-row>
+            <el-row class="project-detail">
                 <el-col :span="6">
                     <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0">{{projects[activeIndex].totalTime}}</p>
+                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                            {{(activeProject.totalTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">预计用时(h)</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0">{{projects[activeIndex].pending}}</p>
+                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">{{activeProject.pending}}</p>
                         <p style="font-size: .7em;margin: 0">待完成任务</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0">{{projects[activeIndex].usedTime}}</p>
-                        <p style="font-size: .7em;margin: 0">已用时间</p>
+                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                            {{(activeProject.usedTime/60).toFixed(1)}}</p>
+                        <p style="font-size: .7em;margin: 0">已用时间(h)</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0">
-                            {{projects[activeIndex].total-projects[activeIndex].pending}}</p>
+                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                            {{activeProject.total-activeProject.pending}}</p>
                         <p style="font-size: .7em;margin: 0">已完成任务</p>
                     </div>
                 </el-col>
             </el-row>
+            <div class="task-panel">
+                <el-input v-model="taskName"
+                          placeholder="请输入任务名称"
+                          @keyup.enter.native="addTask(taskName, tomato)">
+                    <el-rate
+                            slot="prepend"
+                            v-model="tomato"
+                            :icon-classes="['el-icon-fanqie', 'el-icon-fanqie', 'el-icon-fanqie']"
+                            void-icon-class="el-icon-fanqie"
+                    >
+                    </el-rate>
+                </el-input>
+                <el-row class="tasks" :gutter="12" >
+                    <el-col class="task-name" :span="4" v-for="task in tasks">
+                        <el-card shadow="hover">
+                            <div class="task-name" slot="header">
+                                <span>{{task.name}}</span>
+                            </div>
+                            <el-row class="operation">
+                                <el-button icon="el-icon-check" size="mini" circle></el-button>
+                                <el-button icon="el-icon-delete" size="mini" circle></el-button>
+                            </el-row>
+                        </el-card>
+                    </el-col>
+                </el-row>
+            </div>
         </el-main>
     </el-container>
 </template>
@@ -73,6 +98,7 @@
 <script>
     // import Task from '../task';
     import Project from '../project';
+    import Task from "../task";
 
     export default {
         name: "Home",
@@ -90,12 +116,24 @@
             },
             addProject(name) {
                 this.dialogVisible = false;
-                this.projects.push(new Project(name, 'el-icon-menu'));
+                const project = new Project(name);
+                this.projects.push(project);
+                setTimeout(() => this.activeProject = project, 100);
+            },
+            addTask(name, tomato) {
+                if (this.activeProject.hasTask(name)) {
+                    console.log('该任务已经存在')
+                    return;
+                }
+                const task = new Task(name, tomato * 25);
+                this.activeProject.addTask(task);
+                this.tasks = this.activeProject.tasks;
             },
             submitForm(formName) {
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        this.addProject(this.ruleForm.name);
+                        this.addProject(this.addProjectForm.name);
+                        this.resetForm(formName);
                     } else {
                         return false;
                     }
@@ -107,25 +145,34 @@
             }
         },
         data: function () {
-            return {
-                projects: [
-                    new Project('今天', 'el-icon-menu'),
-                    new Project('明天', 'el-icon-menu'),
-                    new Project('即将到来', 'el-icon-document'),
-                ],
-                newProject: new Project('新建项目', 'el-icon-plus'),
-                activeIndex: 0,
-                dialogVisible: false,
-                projectName: '',
-                ruleForm: {
-                    name: ''
-                },
-                rules: {
-                    name: [
-                        {required: true, message: '请输入项目名称', trigger: 'blur'},
-                        {min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur'}
-                    ]
+            let checkProject = (rule, value, callback) => {
+                if (this.projects.filter(v => v.name === value).length > 0) {
+                    return callback(new Error('项目已存在'));
                 }
+                callback();
+            };
+            const today = new Project('今天');
+            const tomorrow = new Project('明天');
+            const feature = new Project('即将到来');
+            return {
+                projects: [today, tomorrow, feature],
+                newProject: new Project('新建项目'),
+                activeProject: today,
+                tasks: today.tasks,
+                dialogVisible: false,
+                addProjectForm: {
+                    name: ''
+                }
+                ,
+                addProjectRules: {
+                    name: [
+                        {validator: checkProject, trigger: 'blur'},
+                        {required: true, message: '请输入项目名称', trigger: 'blur'},
+                        {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur'}
+                    ]
+                },
+                taskName: null,
+                tomato: 0
             }
         }
     }
@@ -133,6 +180,8 @@
 </script>
 
 <style scoped>
+    @import "../assets/iconfont.css";
+
     .el-container {
         height: 100%;
     }
@@ -150,7 +199,7 @@
         padding: 0;
     }
 
-    .el-row {
+    .project-detail {
         width: 100%;
         border-bottom: #909399 solid 1px;
     }
@@ -158,5 +207,26 @@
     .grid-content {
         height: 60px;
         text-align: center;
+    }
+
+    .task-panel {
+        padding: .8em;
+    }
+
+    .tasks {
+        margin-top: 1em;
+        height: 2em;
+    }
+
+    .task-name {
+        height: 1em;
+    }
+
+    .operation {
+        float: right;
+    }
+
+    .operation{
+        float: right;
     }
 </style>
