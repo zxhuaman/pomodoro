@@ -33,7 +33,6 @@
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "addProjectRules": {},
     "parserOptions": {
       "parser": "babel-eslint"
     }

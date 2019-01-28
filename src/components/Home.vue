@@ -23,17 +23,17 @@
                 width="35%">
             <el-form :model="addProjectForm"
                      :rules="addProjectRules"
-                     ref="addProjectForm"
-                     label-width="80px">
+                     :ref="addProjectForm.ref"
+                     label-width="80px"
+                     @submit.native.prevent>
                 <el-form-item label="项目名称" prop="name">
                     <el-input v-model="addProjectForm.name"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="submitForm('addProjectForm')">新建</el-button>
-                    <el-button @click="resetForm('addProjectForm')">取消</el-button>
+                    <el-button type="primary" @click="submitForm(addProjectForm.ref)">新建</el-button>
+                    <el-button @click="resetForm(addProjectForm.ref)">取消</el-button>
                 </el-form-item>
             </el-form>
-
         </el-dialog>
         <el-main>
             <el-row class="project-detail">
@@ -66,30 +66,57 @@
                 </el-col>
             </el-row>
             <div class="task-panel">
-                <el-input v-model="taskName"
-                          placeholder="请输入任务名称"
-                          @keyup.enter.native="addTask(taskName, tomato)">
-                    <el-rate
-                            slot="prepend"
-                            v-model="tomato"
-                            :icon-classes="['el-icon-fanqie', 'el-icon-fanqie', 'el-icon-fanqie']"
-                            void-icon-class="el-icon-fanqie"
-                    >
-                    </el-rate>
-                </el-input>
-                <el-row class="tasks" :gutter="12" >
-                    <el-col class="task-name" :span="4" v-for="task in tasks">
-                        <el-card shadow="hover">
-                            <div class="task-name" slot="header">
-                                <span>{{task.name}}</span>
-                            </div>
-                            <el-row class="operation">
-                                <el-button icon="el-icon-check" size="mini" circle></el-button>
-                                <el-button icon="el-icon-delete" size="mini" circle></el-button>
-                            </el-row>
-                        </el-card>
-                    </el-col>
-                </el-row>
+                <el-form :model="addTaskForm"
+                         :rules="addTaskRules"
+                         :ref="addTaskForm.ref"
+                         @submit.native.prevent>
+
+                    <el-form-item prop="name">
+                        <el-input v-model="addTaskForm.name"
+                                  placeholder="请输入任务名称"
+                                  @keyup.enter.native="submitForm(addTaskForm.ref)">
+                            <el-rate
+                                    slot="append"
+                                    v-model="addTaskForm.tomato"
+                                    :icon-classes="['el-icon-fanqie', 'el-icon-fanqie', 'el-icon-fanqie']"
+                                    void-icon-class="el-icon-fanqie">
+                            </el-rate>
+                        </el-input>
+                    </el-form-item>
+                </el-form>
+                <el-table
+                        v-if="activeProject.tasks.length > 0"
+                        class="tasks"
+                        max-height="700"
+                        height="550"
+                        :data="activeProject.tasks"
+                        style="width: 100%">
+                    <el-table-column
+                            prop="name"
+                            label="任务名">
+                    </el-table-column>
+                    <el-table-column
+                            prop="totalTime"
+                            label="总时间(min)">
+                    </el-table-column>
+                    <el-table-column
+                            label="已用时间(min)"
+                            prop="usedTime">
+                    </el-table-column>
+                    <el-table-column
+                            fixed="right"
+                            label="操作">
+                        <template slot-scope="scope">
+                            <el-button v-if="scope.row.state === 'uncompleted'"
+                                       @click="completeTask(scope.row.name)" size="mini"
+                                       icon="el-icon-check" title="完成"
+                                       circle>
+                            </el-button>
+                            <el-button @click="removeTask(scope.row)"
+                                       size="mini" icon="el-icon-delete" title="删除" circle></el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
             </div>
         </el-main>
     </el-container>
@@ -121,33 +148,55 @@
                 setTimeout(() => this.activeProject = project, 100);
             },
             addTask(name, tomato) {
-                if (this.activeProject.hasTask(name)) {
-                    console.log('该任务已经存在')
-                    return;
-                }
                 const task = new Task(name, tomato * 25);
                 this.activeProject.addTask(task);
-                this.tasks = this.activeProject.tasks;
             },
-            submitForm(formName) {
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        this.addProject(this.addProjectForm.name);
-                        this.resetForm(formName);
-                    } else {
-                        return false;
-                    }
-                });
+            submitForm(ref) {
+                if (this.addProjectForm.ref === ref) {
+                    this.$refs[ref].validate((valid) => {
+                        if (valid) {
+                            this.addProject(this.addProjectForm.name);
+                            this.resetForm(ref);
+                        } else {
+                            return false;
+                        }
+                    });
+                } else if (this.addTaskForm.ref === ref) {
+                    this.$refs[ref].validate((valid) => {
+                        if (valid) {
+                            this.addTask(this.addTaskForm.name, this.addTaskForm.tomato);
+                            this.resetForm(ref);
+                        } else {
+                            return false;
+                        }
+                    });
+                }
             },
-            resetForm(formName) {
-                this.$refs[formName].resetFields();
-                this.dialogVisible = false;
+            resetForm(ref) {
+                this.$refs[ref].resetFields();
+                if (this.addProjectForm.ref === ref) {
+                    this.dialogVisible = false;
+                } else if (this.addTaskForm.ref === ref) {
+                    this.addTaskForm.tomato = 1;
+                }
+            },
+            completeTask(taskName) {
+                this.activeProject.completeTask(taskName);
+            },
+            removeTask(task) {
+                this.activeProject.removeTask(task);
             }
         },
         data: function () {
             let checkProject = (rule, value, callback) => {
                 if (this.projects.filter(v => v.name === value).length > 0) {
                     return callback(new Error('项目已存在'));
+                }
+                callback();
+            };
+            let checkTask = (rule, value, callback) => {
+                if (this.activeProject.hasTask(value)) {
+                    return callback(new Error('任务已存在'));
                 }
                 callback();
             };
@@ -158,12 +207,11 @@
                 projects: [today, tomorrow, feature],
                 newProject: new Project('新建项目'),
                 activeProject: today,
-                tasks: today.tasks,
                 dialogVisible: false,
                 addProjectForm: {
+                    ref: 'add-project',
                     name: ''
-                }
-                ,
+                },
                 addProjectRules: {
                     name: [
                         {validator: checkProject, trigger: 'blur'},
@@ -171,8 +219,18 @@
                         {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur'}
                     ]
                 },
-                taskName: null,
-                tomato: 0
+                addTaskForm: {
+                    ref: 'add-task',
+                    name: '',
+                    tomato: 1
+                },
+                addTaskRules: {
+                    name: [
+                        {validator: checkTask, trigger: 'blur'},
+                        {required: true, message: '请输入任务名称', trigger: 'blur'},
+                        {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur'}
+                    ]
+                }
             }
         }
     }
@@ -196,6 +254,7 @@
     }
 
     .el-main {
+        overflow-y: hidden;
         padding: 0;
     }
 
@@ -214,8 +273,6 @@
     }
 
     .tasks {
-        margin-top: 1em;
-        height: 2em;
     }
 
     .task-name {
@@ -226,7 +283,8 @@
         float: right;
     }
 
-    .operation{
+    .operation {
         float: right;
+        margin-bottom: .5em;
     }
 </style>

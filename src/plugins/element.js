@@ -15,7 +15,7 @@ import {
     Form,
     FormItem,
     Rate,
-    Card
+    Card, Table, TableColumn
 } from 'element-ui'
 
 Vue.use(Container)
@@ -34,3 +34,5 @@ Vue.use(Form)
 Vue.use(FormItem)
 Vue.use(Rate)
 Vue.use(Card)
+Vue.use(Table)
+Vue.use(TableColumn)
