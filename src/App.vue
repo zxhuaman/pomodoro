@@ -1,11 +1,11 @@
 <template>
     <div id="app">
         <el-header height="48px">
-            <a class="logo" href="/"><img src="./assets/logo.png" alt="logo"></a>
-            <a href="/" class="site-title">promodoro</a>
-            <a href="/login">
-                <el-button class="sign-in" type="primary" size="small">登陆</el-button>
-            </a>
+            <router-link to="/home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
+            <router-link to="/home" class="site-title">promodoro</router-link>
+            <router-link to="/login" class="sign-in">
+                <el-button type="primary" size="small">登陆</el-button>
+            </router-link>
         </el-header>
         <router-view></router-view>
     </div>

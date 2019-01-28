@@ -1,6 +1,6 @@
 <template>
     <el-container>
-        <el-aside width="250px">
+        <el-aside>
             <el-menu :default-active="activeProject.name">
                 <el-menu-item v-for="project in projects" :index="project.name" @click="activeProject=project">
                     <i class="el-icon-menu"></i>
@@ -273,19 +273,4 @@
         padding: .8em;
     }
 
-    .tasks {
-    }
-
-    .task-name {
-        height: 1em;
-    }
-
-    .operation {
-        float: right;
-    }
-
-    .operation {
-        float: right;
-        margin-bottom: .5em;
-    }
 </style>
