@@ -90,7 +90,7 @@
                         max-height="700"
                         height="550"
                         :data="activeProject.tasks"
-                        style="width: 100%">
+                >
                     <el-table-column
                             prop="name"
                             label="任务名">
@@ -103,6 +103,7 @@
                             label="已用时间(min)"
                             prop="usedTime">
                     </el-table-column>
+
                     <el-table-column
                             fixed="right"
                             label="操作">
@@ -125,7 +126,7 @@
 <script>
     // import Task from '../task';
     import Project from '../project';
-    import Task from "../task";
+    import Task, {COMPLETED} from "../task";
 
     export default {
         name: "Home",
@@ -226,9 +227,9 @@
                 },
                 addTaskRules: {
                     name: [
-                        {validator: checkTask, trigger: 'blur'},
-                        {required: true, message: '请输入任务名称', trigger: 'blur'},
-                        {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur'}
+                        {validator: checkTask, trigger: 'focus'},
+                        {required: true, message: '请输入任务名称', trigger: 'focus'},
+                        {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'focus'}
                     ]
                 }
             }
