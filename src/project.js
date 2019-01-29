@@ -1,6 +1,7 @@
 import {COMPLETED, UNCOMPLETED} from "./task";
 
 export default class Project {
+    _createTime;
     _name;
     _total = 0;//总任务数
     _pending = 0;//待完成任务
@@ -10,6 +11,7 @@ export default class Project {
 
     constructor(name) {
         this._name = name;
+        this._createTime = new Date().getTime();
     }
 
     addTask(task) {
@@ -88,10 +90,11 @@ export default class Project {
     get tasks() {
         return [...this._tasks.values()];
     }
-/*
-    set tasks(value) {
-        this._tasks = value;
-    }*/
+
+    /*
+        set tasks(value) {
+            this._tasks = value;
+        }*/
 
     get name() {
         return this._name;
@@ -99,5 +102,10 @@ export default class Project {
 
     set name(value) {
         this._name = value;
+    }
+
+
+    get createTime() {
+        return this._createTime;
     }
 }

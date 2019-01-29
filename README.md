@@ -1,29 +1,12 @@
-# pomodoro
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 功能列表
+- home
+    - 创建项目
+    - 创建任务
+    - 项目面板
+    - 任务面板 
+- login
+- statistics
+    - 总任务数、完成任务数
+    - 总时间、用时
+    - 按项目、年月分类、
+    

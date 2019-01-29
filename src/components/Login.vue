@@ -24,7 +24,8 @@
                 this.$refs[ref].validate((valid) => {
                     if (valid) {
                         this.resetForm(ref);
-                        this.$router.push('/home');
+                        this.$router.push('/pomodoro/home');
+                        this.$store.commit('login');
                     } else {
                         return false;
                     }

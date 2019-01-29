@@ -89,20 +89,35 @@
                         class="tasks"
                         max-height="700"
                         height="550"
-                        :data="activeProject.tasks"
-                >
+                        :show-header="false"
+                        :data="activeProject.tasks">
+                    <el-table-column
+                            prop="createTimeString"
+                            align="center"
+                            label="创建时间">
+                    </el-table-column>
                     <el-table-column
                             prop="name"
+                            align="center"
                             label="任务名">
                     </el-table-column>
                     <el-table-column
                             prop="totalTime"
                             label="总时间(min)">
+                        <template slot-scope="scope">
+                            <el-rate
+                                    slot="append"
+                                    :max="scope.row.totalTime/25"
+                                    :value="scope.row.totalTime/25"
+                                    :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
+                                    void-icon-class="el-icon-tomato">
+                            </el-rate>
+                        </template>
                     </el-table-column>
-                    <el-table-column
+                    <!--<el-table-column
                             label="已用时间(min)"
                             prop="usedTime">
-                    </el-table-column>
+                    </el-table-column>-->
 
                     <el-table-column
                             fixed="right"

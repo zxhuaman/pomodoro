@@ -1,10 +1,13 @@
 <template>
     <div id="app">
         <el-header height="48px">
-            <router-link to="/home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
-            <router-link to="/home" class="site-title">promodoro</router-link>
-            <router-link to="/login" class="sign-in">
+            <router-link to="home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
+            <router-link to="home" class="site-title">pomodoro</router-link>
+            <router-link to="login" class="sign-in" v-if="!loginState">
                 <el-button type="primary" size="small">登陆</el-button>
+            </router-link>
+            <router-link to="dashboard" class="dashboard" v-if="loginState">
+                <el-button type="primary" size="small">统计</el-button>
             </router-link>
         </el-header>
         <keep-alive>
@@ -15,7 +18,12 @@
 
 <script>
     export default {
-        name: 'app'
+        name: 'app',
+        computed: {
+            loginState() {
+                return this.$store.state.login;
+            }
+        }
     }
 </script>
 
@@ -60,6 +68,7 @@
         text-decoration: none;
     }
 
+    .dashboard,
     .sign-in {
         position: absolute;
         top: .5em;
