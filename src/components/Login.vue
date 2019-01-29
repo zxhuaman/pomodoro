@@ -62,8 +62,12 @@
     @import "../assets/iconfont.css";
 
     .login {
+        text-align: center;
         width: 25%;
         margin: 12% auto;
+    }
+    .el-input {
+        height: 3em;
     }
 
     .el-button {

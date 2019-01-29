@@ -4,10 +4,10 @@
             <router-link to="home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
             <router-link to="home" class="site-title">pomodoro</router-link>
             <router-link to="login" class="sign-in" v-if="!loginState">
-                <el-button type="primary" size="small">登陆</el-button>
+                <img src="./assets/login.png" alt="登陆" title="登陆">
             </router-link>
             <router-link to="dashboard" class="dashboard" v-if="loginState">
-                <el-button type="primary" size="small">统计</el-button>
+                <img src="./assets/dashboard.png" alt="统计" title="统计">
             </router-link>
         </el-header>
         <keep-alive>
@@ -73,6 +73,11 @@
         position: absolute;
         top: .5em;
         right: 2em;
+    }
+
+    .dashboard img,
+    .sign-in img {
+        height: 1.8em;
     }
 
     .el-main {
