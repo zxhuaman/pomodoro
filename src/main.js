@@ -6,6 +6,7 @@ import Home from "./components/Home";
 import VueRouter from "vue-router";
 import Login from "./components/Login";
 import Vuex from 'vuex'
+import Dashboard from "./components/Dashboard";
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -17,7 +18,8 @@ const router = new VueRouter({
     routes: [
         {path: '/pomodoro', component: Home},
         {path: '/pomodoro/home', component: Home},
-        {path: '/pomodoro/login', component: Login}
+        {path: '/pomodoro/login', component: Login},
+        {path: '/pomodoro/dashboard', component: Dashboard},
     ]
 })
 
