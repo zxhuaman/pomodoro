@@ -78,8 +78,8 @@
                             <el-rate
                                     slot="append"
                                     v-model="addTaskForm.tomato"
-                                    :icon-classes="['el-icon-fanqie', 'el-icon-fanqie', 'el-icon-fanqie']"
-                                    void-icon-class="el-icon-fanqie">
+                                    :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
+                                    void-icon-class="el-icon-tomato">
                             </el-rate>
                         </el-input>
                     </el-form-item>

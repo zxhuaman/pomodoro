@@ -7,7 +7,9 @@
                 <el-button type="primary" size="small">登陆</el-button>
             </router-link>
         </el-header>
-        <router-view></router-view>
+        <keep-alive>
+            <router-view></router-view>
+        </keep-alive>
     </div>
 </template>
 
