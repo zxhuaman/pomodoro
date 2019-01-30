@@ -141,7 +141,7 @@
 <script>
     // import Task from '../task';
     import Project from '../project';
-    import Task, {COMPLETED} from "../task";
+    import Task from "../task";
 
     export default {
         name: "Home",

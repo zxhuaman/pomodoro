@@ -15,7 +15,8 @@ import {
     Form,
     FormItem,
     Rate,
-    Card, Table, TableColumn
+    Card, Table, TableColumn, Select, OptionGroup, Option,
+    DatePicker
 } from 'element-ui'
 
 Vue.use(Container)
@@ -36,3 +37,7 @@ Vue.use(Rate)
 Vue.use(Card)
 Vue.use(Table)
 Vue.use(TableColumn)
+Vue.use(Select)
+Vue.use(OptionGroup)
+Vue.use(Option)
+Vue.use(DatePicker)
