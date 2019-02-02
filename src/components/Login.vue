@@ -25,7 +25,7 @@
                     if (valid) {
                         this.resetForm(ref);
                         this.$router.push('/pomodoro/home');
-                        this.$store.commit('login');
+                        this.$root.$data.login();
                     } else {
                         return false;
                     }
@@ -66,6 +66,7 @@
         width: 25%;
         margin: 12% auto;
     }
+
     .el-input {
         height: 3em;
     }

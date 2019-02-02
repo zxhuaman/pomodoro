@@ -1,8 +1,9 @@
 <template>
     <el-container>
         <el-aside>
-            <el-menu :default-active="activeProject.name">
-                <el-menu-item v-for="project in projects" :index="project.name" @click="activeProject=project">
+            <el-menu :default-active="this.$root.$data.state.curProject.name">
+                <el-menu-item v-for="project in this.$root.$data.state.projects" :index="project.name"
+                              @click="$root.$data.setCurrentProject(project)">
                     <i class="el-icon-menu"></i>
                     <span slot="title">
                         {{project.name}}
@@ -40,27 +41,28 @@
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(activeProject.totalTime/60).toFixed(1)}}</p>
+                            {{(this.$root.$data.state.curProject.totalTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">预计用时(h)</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">{{activeProject.pending}}</p>
+                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                            {{this.$root.$data.state.curProject.pending}}</p>
                         <p style="font-size: .7em;margin: 0">待完成任务</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(activeProject.usedTime/60).toFixed(1)}}</p>
+                            {{(this.$root.$data.state.curProject.usedTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">已用时间(h)</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{activeProject.total-activeProject.pending}}</p>
+                            {{this.$root.$data.state.curProject.total-this.$root.$data.state.curProject.pending}}</p>
                         <p style="font-size: .7em;margin: 0">已完成任务</p>
                     </div>
                 </el-col>
@@ -85,12 +87,12 @@
                     </el-form-item>
                 </el-form>
                 <el-table
-                        v-if="activeProject.tasks.length > 0"
+                        v-if="this.$root.$data.state.curProject.tasks.length > 0"
                         class="tasks"
                         max-height="700"
                         height="550"
                         :show-header="false"
-                        :data="activeProject.tasks">
+                        :data="this.$root.$data.state.curProject.tasks">
                     <el-table-column
                             prop="createTimeString"
                             align="center"
@@ -114,10 +116,6 @@
                             </el-rate>
                         </template>
                     </el-table-column>
-                    <!--<el-table-column
-                            label="已用时间(min)"
-                            prop="usedTime">
-                    </el-table-column>-->
 
                     <el-table-column
                             fixed="right"
@@ -139,7 +137,6 @@
 </template>
 
 <script>
-    // import Task from '../task';
     import Project from '../project';
     import Task from "../task";
 
@@ -160,12 +157,12 @@
             addProject(name) {
                 this.dialogVisible = false;
                 const project = new Project(name);
-                this.projects.push(project);
-                setTimeout(() => this.activeProject = project, 100);
+                this.$root.$data.addProject(project);
+                setTimeout(() => this.$root.$data.setCurrentProject(project), 100);
             },
             addTask(name, tomato) {
                 const task = new Task(name, tomato * 25);
-                this.activeProject.addTask(task);
+                this.$root.$data.addTask(task)
             },
             submitForm(ref) {
                 if (this.addProjectForm.ref === ref) {
@@ -197,32 +194,27 @@
                 }
             },
             completeTask(taskName) {
-                this.activeProject.completeTask(taskName);
+                this.$root.$data.completeTask(taskName);
             },
             removeTask(task) {
-                this.activeProject.removeTask(task);
+                this.$root.$data.removeTask(task);
             }
         },
         data: function () {
             let checkProject = (rule, value, callback) => {
-                if (this.projects.filter(v => v.name === value).length > 0) {
+                if (this.$root.$data.state.projects.filter(v => v.name === value).length > 0) {
                     return callback(new Error('项目已存在'));
                 }
                 callback();
             };
             let checkTask = (rule, value, callback) => {
-                if (this.activeProject.hasTask(value)) {
+                if (this.$root.$data.state.curProject.hasTask(value)) {
                     return callback(new Error('任务已存在'));
                 }
                 callback();
             };
-            const today = new Project('今天');
-            const tomorrow = new Project('明天');
-            const feature = new Project('即将到来');
             return {
-                projects: [today, tomorrow, feature],
                 newProject: new Project('新建项目'),
-                activeProject: today,
                 dialogVisible: false,
                 addProjectForm: {
                     ref: 'add-project',

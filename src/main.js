@@ -7,6 +7,8 @@ import VueRouter from "vue-router";
 import Login from "./components/Login";
 import Vuex from 'vuex'
 import Dashboard from "./components/Dashboard";
+import {data} from "./data";
+
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -23,20 +25,10 @@ const router = new VueRouter({
     ]
 })
 
-const store = new Vuex.Store({
-    state: {
-        login: false
-    },
-    mutations: {
-        login(state) {
-            state.login = true;
-        }
-    }
-})
 
 new Vue({
     el: '#app',
     router,
-    store,
+    data: data,
     render: h => h(App),
 }).$mount('#app')

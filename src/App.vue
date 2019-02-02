@@ -3,10 +3,10 @@
         <el-header height="48px">
             <router-link to="home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
             <router-link to="home" class="site-title">pomodoro</router-link>
-            <router-link to="login" class="sign-in" v-if="!loginState">
+            <router-link to="login" class="sign-in" v-if="!$root.$data.state.login">
                 <img src="./assets/login.png" alt="登陆" title="登陆">
             </router-link>
-            <router-link to="dashboard" class="dashboard" v-if="loginState">
+            <router-link to="dashboard" class="dashboard" v-if="$root.$data.state.login">
                 <img src="./assets/dashboard.png" alt="统计" title="统计">
             </router-link>
         </el-header>
@@ -18,12 +18,7 @@
 
 <script>
     export default {
-        name: 'app',
-        computed: {
-            loginState() {
-                return this.$store.state.login;
-            }
-        }
+        name: 'app'
     }
 </script>
 
