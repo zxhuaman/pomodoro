@@ -1,5 +1,5 @@
 ﻿import Mock from 'mockjs'
-import {CODE_SUCCESS, CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../code";
+import {CODE_SUCCESS, CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "./constant";
 
 const USERS = new Map([
     ['xiaodong', '123456'],

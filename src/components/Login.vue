@@ -17,54 +17,53 @@
 </template>
 
 <script>
-    import {CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../code";
+    import {CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../mock/constant";
 
     export default {
         name: "Login",
         methods: {
             onSubmit(ref) {
                 this.$refs[ref].validate((valid) => {
-                    if (valid) {
-                        this.$root.$data.login(this.loginForm.username, this.loginForm.password)
-                            .then(code => {
-                                if (this.$root.$data.state.login) {
-                                    this.resetForm(ref);
-                                    this.$router.push('/pomodoro/home');
-                                    return true;
-                                }
-                                switch (code) {
-                                    case CODE_USERNAME_NONEXISTENT:
-                                        this.$message({
-                                            message: '用户不存在',
-                                            type: 'error',
-                                            center: true,
-                                            duration: 1000
-                                        });
-                                        break;
-                                    case CODE_WRONG_PASSWORD:
-                                        this.$message({
-                                            message: '密码错误',
-                                            type: 'error',
-                                            center: true,
-                                            duration: 1000
-                                        });
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            })
-                            .catch(error => {
-                                this.$message({
-                                    message: '请求失败',
-                                    type: 'error',
-                                    center: true,
-                                    duration: 1000
-                                });
-                            });
-
-                    } else {
+                    if (!valid) {
                         return false;
                     }
+                    this.$root.$data.login(this.loginForm.username, this.loginForm.password)
+                        .then(code => {
+                            if (this.$root.$data.state.login) {
+                                this.resetForm(ref);
+                                this.$router.push('/pomodoro/home');
+                                return true;
+                            }
+                            switch (code) {
+                                case CODE_USERNAME_NONEXISTENT:
+                                    this.$message({
+                                        message: '用户不存在',
+                                        type: 'error',
+                                        center: true,
+                                        duration: 1000
+                                    });
+                                    break;
+                                case CODE_WRONG_PASSWORD:
+                                    this.$message({
+                                        message: '密码错误',
+                                        type: 'error',
+                                        center: true,
+                                        duration: 1000
+                                    });
+                                    break;
+                                default:
+                                    break;
+                            }
+                        })
+                        .catch(error => {
+                            this.$message({
+                                message: '请求失败',
+                                type: 'error',
+                                center: true,
+                                duration: 1000
+                            });
+                        });
+
                 });
             },
             resetForm(ref) {
@@ -75,8 +74,8 @@
             return {
                 loginForm: {
                     ref: 'login',
-                    username: '',
-                    password: ''
+                    username: 'axiao',
+                    password: '123456'
                 },
                 loginRules: {
                     username: [

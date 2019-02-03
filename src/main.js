@@ -7,7 +7,7 @@ import VueRouter from "vue-router";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import {data} from "./data";
-import './mock/login'
+import './mock/login-mock'
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)

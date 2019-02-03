@@ -1,6 +1,6 @@
 ﻿import Project from "./project";
 import Axios from 'axios';
-import {CODE_SUCCESS} from "./code";
+import {CODE_SUCCESS} from "./mock/constant";
 
 const projects = [
     new Project('今天'),
