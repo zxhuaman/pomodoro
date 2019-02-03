@@ -16,7 +16,8 @@ import {
     FormItem,
     Rate,
     Card, Table, TableColumn, Select, OptionGroup, Option,
-    DatePicker
+    DatePicker,
+    Message
 } from 'element-ui'
 
 Vue.use(Container)
@@ -41,3 +42,4 @@ Vue.use(Select)
 Vue.use(OptionGroup)
 Vue.use(Option)
 Vue.use(DatePicker)
+Vue.prototype.$message = Message

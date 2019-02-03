@@ -5,14 +5,12 @@ import '../theme/index.css'
 import Home from "./components/Home";
 import VueRouter from "vue-router";
 import Login from "./components/Login";
-import Vuex from 'vuex'
 import Dashboard from "./components/Dashboard";
 import {data} from "./data";
-
+import './mock/login'
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
-Vue.use(Vuex)
 
 const router = new VueRouter({
     mode: 'history',

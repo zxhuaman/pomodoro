@@ -1,5 +1,6 @@
 ﻿import Project from "./project";
-import Task from "./task";
+import Axios from 'axios';
+import {CODE_SUCCESS} from "./code";
 
 const projects = [
     new Project('今天'),
@@ -36,11 +37,26 @@ export const data = {
         this.state.curProject = project
         this.state.projects = this.state.projects
     },
-    login() {
+    login(username, password) {
         if (this.debug) {
             console.log('Login')
         }
-        this.state.login = true
+        return new Promise((resolve, reject) => {
+            Axios
+                .post('/login', {
+                    username: username,
+                    password: password
+                })
+                .then(response => {
+                    this.state.login = response.data.code === CODE_SUCCESS ? true : false;
+                    resolve(response.data.code);
+                })
+                .catch(error => {
+                    console.log(error);
+                    this.state.login = false;
+                    reject(error);
+                });
+        })
     },
     logout() {
         if (this.debug) {

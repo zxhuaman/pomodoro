@@ -1,5 +1,5 @@
 <template>
-    <el-form class="login" :model="loginForm" :rules="loginRules" :ref="loginForm.ref" status-icon>
+    <el-form class="login" :model="loginForm" :rules="loginRules" :ref="loginForm.ref">
         <el-form-item prop="username">
             <el-input v-model="loginForm.username" placeholder="用户名"></el-input>
         </el-form-item>
@@ -17,15 +17,45 @@
 </template>
 
 <script>
+    import {CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../code";
+
     export default {
         name: "Login",
         methods: {
             onSubmit(ref) {
                 this.$refs[ref].validate((valid) => {
                     if (valid) {
-                        this.resetForm(ref);
-                        this.$router.push('/pomodoro/home');
-                        this.$root.$data.login();
+                        this.$root.$data.login(this.loginForm.username, this.loginForm.password)
+                            .then(code => {
+                                console.log(this)
+                                if (this.$root.$data.state.login) {
+                                    this.resetForm(ref);
+                                    this.$router.push('/pomodoro/home');
+                                } else {
+                                    switch (code) {
+                                        case CODE_USERNAME_NONEXISTENT:
+                                            this.$message({
+                                                message: '用户不存在',
+                                                type: 'error',
+                                                center: true
+                                            });
+                                            break;
+                                        case CODE_WRONG_PASSWORD:
+                                            this.$message({
+                                                message: '密码错误',
+                                                type: 'error',
+                                                center: true
+                                            });
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            })
+                            .catch(error => {
+
+                            });
+
                     } else {
                         return false;
                     }
@@ -49,7 +79,7 @@
                     ],
                     password: [
                         {required: true, message: '请输入密码', trigger: 'blur'},
-                        {min: 8, max: 16, message: '长度在 8 到 16 个字符', trigger: 'blur'}
+                        {min: 6, max: 16, message: '长度在 6 到 16 个字符', trigger: 'blur'}
                     ]
                 },
                 display: false

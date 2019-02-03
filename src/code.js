@@ -1,0 +1,3 @@
+﻿export const CODE_SUCCESS = 0x1000;
+export const CODE_USERNAME_NONEXISTENT = 0x1001;
+export const CODE_WRONG_PASSWORD = 0x1002;
