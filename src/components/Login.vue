@@ -27,33 +27,39 @@
                     if (valid) {
                         this.$root.$data.login(this.loginForm.username, this.loginForm.password)
                             .then(code => {
-                                console.log(this)
                                 if (this.$root.$data.state.login) {
                                     this.resetForm(ref);
                                     this.$router.push('/pomodoro/home');
-                                } else {
-                                    switch (code) {
-                                        case CODE_USERNAME_NONEXISTENT:
-                                            this.$message({
-                                                message: '用户不存在',
-                                                type: 'error',
-                                                center: true
-                                            });
-                                            break;
-                                        case CODE_WRONG_PASSWORD:
-                                            this.$message({
-                                                message: '密码错误',
-                                                type: 'error',
-                                                center: true
-                                            });
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                                    return true;
+                                }
+                                switch (code) {
+                                    case CODE_USERNAME_NONEXISTENT:
+                                        this.$message({
+                                            message: '用户不存在',
+                                            type: 'error',
+                                            center: true,
+                                            duration: 1000
+                                        });
+                                        break;
+                                    case CODE_WRONG_PASSWORD:
+                                        this.$message({
+                                            message: '密码错误',
+                                            type: 'error',
+                                            center: true,
+                                            duration: 1000
+                                        });
+                                        break;
+                                    default:
+                                        break;
                                 }
                             })
                             .catch(error => {
-
+                                this.$message({
+                                    message: '请求失败',
+                                    type: 'error',
+                                    center: true,
+                                    duration: 1000
+                                });
                             });
 
                     } else {
