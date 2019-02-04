@@ -8,6 +8,7 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import {data} from "./data";
 import './mock/login-mock'
+import './mock/project-mock'
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -16,7 +17,7 @@ const router = new VueRouter({
     mode: 'history',
     base: __dirname,
     routes: [
-        {path: '/pomodoro', component: Home},
+        {path: '/pomodoro/', component: Login},
         {path: '/pomodoro/home', component: Home},
         {path: '/pomodoro/login', component: Login},
         {path: '/pomodoro/dashboard', component: Dashboard},

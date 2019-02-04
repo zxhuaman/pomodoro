@@ -2,7 +2,7 @@
     <div>
         <el-row class="select">
             <el-col :span="8">
-                <el-select placeholder="请选择" value="">
+                <el-select placeholder="请选择" v-model="selectProject">
                     <el-option-group
                             v-for="project in $root.$data.state.projects"
                             :key="project.name"
@@ -17,11 +17,11 @@
                 </el-select>
             </el-col>
             <el-col :span="7">
-                <el-date-picker></el-date-picker>
+                <el-date-picker v-model="fromDate"></el-date-picker>
             </el-col>
             <el-col :span="2">_</el-col>
             <el-col :span="7">
-                <el-date-picker></el-date-picker>
+                <el-date-picker v-model="toDate"></el-date-picker>
             </el-col>
         </el-row>
     </div>
@@ -33,7 +33,10 @@
         name: "Dashboard",
         data: function () {
             return {
-                projects: this.$root.$data.state.projects
+                projects: this.$root.$data.state.projects,
+                selectProject: null,
+                fromDate: null,
+                toDate: null
             }
         }
     }

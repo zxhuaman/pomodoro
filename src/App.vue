@@ -45,7 +45,6 @@
 
     .el-header {
         border-bottom: 1px solid #2c2c2c;
-
     }
 
     .logo img {

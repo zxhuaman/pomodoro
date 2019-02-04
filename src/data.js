@@ -1,18 +1,22 @@
 ﻿import Project from "./project";
 import Axios from 'axios';
-import {CODE_SUCCESS} from "./mock/constant";
+import {CODE_SUCCESS, RETRIEVE} from "./mock/constant";
 
-const projects = [
-    new Project('今天'),
-    new Project('明天'),
-    new Project('即将到来'),
-]
 export const data = {
     debug: true,
     state: {
-        projects: projects,
-        curProject: projects[0],
+        projects: [],
+        curProject: new Project('今天'),
         login: false
+    },
+    retrieveProject() {
+        Axios.post('/project', {
+            type: RETRIEVE
+        }).then(res => {
+            this.state.projects = res.data.projects;
+        }).catch(error => {
+            console.log(error)
+        });
     },
     addProject(project) {
         this.state.projects.push(project)
@@ -49,10 +53,12 @@ export const data = {
                 })
                 .then(response => {
                     this.state.login = response.data.code === CODE_SUCCESS ? true : false;
+                    if (this.state.login) {
+                        this.retrieveProject();
+                    }
                     resolve(response.data.code);
                 })
                 .catch(error => {
-                    console.log(error);
                     this.state.login = false;
                     reject(error);
                 });

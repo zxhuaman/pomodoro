@@ -7,7 +7,7 @@ const USERS = new Map([
     ['xiaoqing', '123456'],
     ['xiaohua', '123456'],
     ['axiao', '123456'],
-])
+]);
 
 
 Mock.mock('/login', 'post', function (request) {
@@ -21,4 +21,4 @@ Mock.mock('/login', 'post', function (request) {
             'code': CODE_USERNAME_NONEXISTENT
         };
     }
-})
+});
