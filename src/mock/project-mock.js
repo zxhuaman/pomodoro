@@ -5,7 +5,7 @@ import {CODE_FAILED, CODE_REQUEST_NOT_SUPPORTED, CODE_SUCCESS, CREATE, DELETE, R
 
 const TEST_PROJECT = new Project('测试项目');
 for (let i = 1; i < 10; i++) {
-    TEST_PROJECT.addTask(new Task('测试任务' + i));
+    TEST_PROJECT.addTask(new Task('测试任务' + i, 25 * (i % 5 + 1)));
 }
 const PROJECTS = new Map([
     ['今天', new Project('今天')],
@@ -21,7 +21,7 @@ Mock.mock('/project', 'post', function (request) {
         case CREATE:
             return {
                 'code': createProject(body.project) ? CODE_SUCCESS : CODE_FAILED,
-                'projects':[...PROJECTS.values()]
+                'projects': [...PROJECTS.values()]
             };
         case
         RETRIEVE:
@@ -33,13 +33,13 @@ Mock.mock('/project', 'post', function (request) {
         UPDATE:
             return {
                 'code': updateProject(body.project) ? CODE_SUCCESS : CODE_FAILED,
-                'projects':[...PROJECTS.values()]
+                'projects': [...PROJECTS.values()]
             };
         case
         DELETE:
             return {
                 'code': deleteProject(body.project) ? CODE_SUCCESS : CODE_FAILED,
-                'projects':[...PROJECTS.values()]
+                'projects': [...PROJECTS.values()]
             };
         default:
             return {
