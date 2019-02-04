@@ -7,7 +7,8 @@ export default class Project {
     pending = 0;//待完成任务
     totalTime = 0;//任务总时间
     usedTime = 0;//已用时间
-    tasks = new Map();
+    tasksMap = new Map();
+    tasks = [...this.tasksMap.values()];
 
     constructor(name) {
         this.name = name;
@@ -15,43 +16,46 @@ export default class Project {
     }
 
     addTask(task) {
-        this.tasks.set(task.name, task);
+        this.tasksMap.set(task.name, task);
         this.total += 1;
         this.totalTime += task.totalTime;
         if (task.state === UNCOMPLETED) {
             this.pending += 1;
             this.usedTime += task.usedTime;
         }
+        this.tasks = [...this.tasksMap.values()];
     }
 
     removeTask(task) {
-        if (this.tasks.has(task.name)) {
-            this.tasks.delete(task.name);
+        if (this.tasksMap.has(task.name)) {
+            this.tasksMap.delete(task.name);
             this.total -= 1;
             this.totalTime -= task.totalTime;
             this.usedTime -= task.usedTime;
             if (task.state === UNCOMPLETED) {
                 this.pending -= 1;
             }
+            this.tasks = [...this.tasksMap.values()];
         }
     }
 
     hasTask(name) {
-        return this.tasks.has(name);
+        return this.tasksMap.has(name);
     }
 
     getTask(name) {
-        return this.tasks.get(name);
+        return this.tasksMap.get(name);
     }
 
     completeTask(name) {
-        const task = this.tasks.get(name);
+        const task = this.tasksMap.get(name);
         if (task != null) {
             task.usedTime = task.totalTime;
             task.state = COMPLETED;
             this.pending -= 1;
             this.usedTime += task.usedTime;
         }
+        this.tasks = [...this.tasksMap.values()];
     }
     
 }

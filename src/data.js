@@ -1,6 +1,6 @@
 ﻿import Project from "./project";
 import Axios from 'axios';
-import {CODE_SUCCESS, RETRIEVE} from "./mock/constant";
+import {CODE_SUCCESS, CREATE, DELETE, RETRIEVE} from "./mock/constant";
 
 export const data = {
     debug: true,
@@ -9,7 +9,7 @@ export const data = {
         curProject: new Project('今天'),
         login: false
     },
-    retrieveProject() {
+    getProjects() {
         Axios.post('/project', {
             type: RETRIEVE
         }).then(res => {
@@ -19,11 +19,24 @@ export const data = {
         });
     },
     addProject(project) {
-        this.state.projects.push(project)
-        this.state.projects = this.state.projects.slice(0)
+        Axios.post('/project', {
+            type: CREATE,
+            project: project
+        }).then(res => {
+            this.state.projects = res.data.projects;
+        }).catch(error => {
+            console.log(error)
+        });
     },
     removeProject(project) {
-        this.state.projects = this.state.projects.filter(value => value.name !== project.name)
+        Axios.post('/project', {
+            type: DELETE,
+            project: project
+        }).then(res => {
+            this.state.projects = res.data.projects;
+        }).catch(error => {
+            console.log(error)
+        });
     },
     addTask(task) {
         this.state.curProject.addTask(task)
@@ -54,7 +67,7 @@ export const data = {
                 .then(response => {
                     this.state.login = response.data.code === CODE_SUCCESS ? true : false;
                     if (this.state.login) {
-                        this.retrieveProject();
+                        this.getProjects();
                     }
                     resolve(response.data.code);
                 })
