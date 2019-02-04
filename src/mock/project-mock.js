@@ -21,7 +21,7 @@ Mock.mock('/project', 'post', function (request) {
         case CREATE:
             return {
                 'code': createProject(body.project) ? CODE_SUCCESS : CODE_FAILED,
-                'projects':[...PROJECTS].values()
+                'projects':[...PROJECTS.values()]
             };
         case
         RETRIEVE:
@@ -33,13 +33,13 @@ Mock.mock('/project', 'post', function (request) {
         UPDATE:
             return {
                 'code': updateProject(body.project) ? CODE_SUCCESS : CODE_FAILED,
-                'projects':[...PROJECTS].values()
+                'projects':[...PROJECTS.values()]
             };
         case
         DELETE:
             return {
                 'code': deleteProject(body.project) ? CODE_SUCCESS : CODE_FAILED,
-                'projects':[...PROJECTS].values()
+                'projects':[...PROJECTS.values()]
             };
         default:
             return {

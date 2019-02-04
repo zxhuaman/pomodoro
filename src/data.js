@@ -10,6 +10,9 @@ export const data = {
         login: false
     },
     getProjects() {
+        if (this.debug) {
+            console.log('Get projects');
+        }
         Axios.post('/project', {
             type: RETRIEVE
         }).then(res => {
@@ -19,16 +22,23 @@ export const data = {
         });
     },
     addProject(project) {
+        if (this.debug) {
+            console.log('Add projects');
+        }
         Axios.post('/project', {
             type: CREATE,
             project: project
         }).then(res => {
+            console.log(res.data.projects)
             this.state.projects = res.data.projects;
         }).catch(error => {
             console.log(error)
         });
     },
     removeProject(project) {
+        if (this.debug) {
+            console.log('Remove projects');
+        }
         Axios.post('/project', {
             type: DELETE,
             project: project
