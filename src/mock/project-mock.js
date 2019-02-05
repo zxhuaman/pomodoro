@@ -7,7 +7,7 @@ const TEST_PROJECT = new Project('测试项目');
 for (let i = 1; i < 10; i++) {
     TEST_PROJECT.addTask(new Task('测试任务' + i, 25 * (i % 5 + 1)));
 }
-const PROJECTS = new Map([
+export const PROJECTS = new Map([
     ['今天', new Project('今天')],
     ['明天', new Project('明天')],
     ['即将到来', new Project('即将到来')],

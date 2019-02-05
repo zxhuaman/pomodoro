@@ -57,5 +57,4 @@ export default class Project {
         }
         this.tasks = [...this.tasksMap.values()];
     }
-    
 }

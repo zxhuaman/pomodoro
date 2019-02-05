@@ -5,7 +5,7 @@ export default class Task {
     totalTime;
     usedTime;
     state;
-
+    project;
 
     constructor(name, totalTime = 0, usedTime = 0, state = UNCOMPLETED) {
         this.name = name;
