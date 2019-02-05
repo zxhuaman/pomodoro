@@ -162,6 +162,7 @@
             },
             addTask(name, tomato) {
                 const task = new Task(name, tomato * 25);
+                task.project = this.curProject.name;
                 this.$root.$data.addTask(task)
             },
             submitForm(ref) {

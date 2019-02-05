@@ -5,7 +5,9 @@ import {CODE_FAILED, CODE_REQUEST_NOT_SUPPORTED, CODE_SUCCESS, CREATE, DELETE, R
 
 const TEST_PROJECT = new Project('测试项目');
 for (let i = 1; i < 10; i++) {
-    TEST_PROJECT.addTask(new Task('测试任务' + i, 25 * (i % 5 + 1)));
+    const task = new Task('测试任务'+i, 25 * (i % 5 + 1));
+    task.project = TEST_PROJECT.name;
+    TEST_PROJECT.addTask(task);
 }
 export const PROJECTS = new Map([
     ['今天', new Project('今天')],

@@ -7,14 +7,15 @@ export default class Task {
     state;
     project;
 
-    constructor(name, totalTime = 0, usedTime = 0, state = UNCOMPLETED) {
+    constructor(name, totalTime = 0, usedTime = 0, state = UNCOMPLETED, project = null) {
         this.name = name;
         this.totalTime = totalTime;
         this.usedTime = usedTime;
         this.state = state;
-        let date  = new Date();
+        let date = new Date();
         this.createTime = date.getTime();
         this.createTimeString = date.toLocaleDateString();
+        this.project = project;
     }
 }
 
