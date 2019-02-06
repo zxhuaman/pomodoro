@@ -124,7 +124,7 @@
                             label="操作">
                         <template slot-scope="scope">
                             <el-button v-if="scope.row.state === 'uncompleted'"
-                                       @click="completeTask(scope.row.name)" size="mini"
+                                       @click="completeTask(scope.row)" size="mini"
                                        icon="el-icon-check" title="完成"
                                        circle>
                             </el-button>

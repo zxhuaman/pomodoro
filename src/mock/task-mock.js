@@ -57,7 +57,7 @@ function deleteTask(task) {
 
 function updateTask(task) {
     if (PROJECTS.has(task.project) && PROJECTS.get(task.project).hasTask(task.name)) {
-        PROJECTS.get(task.project).completeTask(task);
+        PROJECTS.get(task.project).completeTask(task.name);
         return true;
     }
     return false;
