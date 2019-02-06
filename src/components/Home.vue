@@ -3,9 +3,9 @@
         <el-aside>
             <el-menu :default-active="curProject ? curProject.name : this.$root.$data.state.projects[0].name"
                      v-if="this.$root.$data.state.projects.length>0">
-                <el-menu-item v-for="project in this.$root.$data.state.projects"
+                <el-menu-item v-for="(project, index) in this.$root.$data.state.projects"
                               :index="project.name"
-                              @click="curProject = project">
+                              @click="curIndex = index">
                     <i class="el-icon-menu"></i>
                     <span slot="title">
                         {{project.name}}
@@ -148,6 +148,9 @@
             username() {
                 // 我们很快就会看到 `params` 是什么
                 return this.$route.params.username
+            },
+            curProject: function () {
+                return this.$root.$data.state.projects[this.curIndex];
             }
         },
         methods: {
@@ -160,7 +163,6 @@
                 this.dialogVisible = false;
                 const project = new Project(name);
                 this.$root.$data.addProject(project);
-                setTimeout(() => this.$root.$data.setCurrentProject(project), 100);
             },
             addTask(name, tomato) {
                 const task = new Task(name, tomato * 25);
@@ -242,7 +244,7 @@
                         {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'focus'}
                     ]
                 },
-                curProject: this.$root.$data.state.projects[0]
+                curIndex: 0
             }
         }
     }

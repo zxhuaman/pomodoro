@@ -48,6 +48,9 @@ export const data = {
         });
     },
     addTask(task) {
+        if (this.debug) {
+            console.log('Add task');
+        }
         Axios.post('/task', {
             type: CREATE,
             task: task
@@ -58,6 +61,9 @@ export const data = {
         }).catch(error => console.log(error));
     },
     removeTask(task) {
+        if (this.debug) {
+            console.log('Remove task')
+        }
         Axios.post('/task', {
             type: DELETE,
             task: task
@@ -68,6 +74,9 @@ export const data = {
         }).catch(error => console.log(error));
     },
     completeTask(task) {
+        if (this.debug) {
+            console.log('Complete task');
+        }
         Axios.post('/task', {
             type: UPDATE,
             task: task
