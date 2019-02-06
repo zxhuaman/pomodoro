@@ -49,7 +49,7 @@ function retrieveTask(task) {
 
 function deleteTask(task) {
     if (PROJECTS.has(task.project) && PROJECTS.get(task.project).hasTask(task.name)) {
-        PROJECTS.get(task.project).remove(task);
+        PROJECTS.get(task.project).removeTask(task);
         return true;
     }
     return false;
