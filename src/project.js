@@ -1,8 +1,8 @@
 import {COMPLETED, UNCOMPLETED} from "./task";
 
 export default class Project {
-    createTime;
     name;
+    createTime;
     total = 0;//总任务数
     pending = 0;//待完成任务
     totalTime = 0;//任务总时间

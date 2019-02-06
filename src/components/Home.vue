@@ -1,9 +1,11 @@
 <template>
     <el-container>
         <el-aside>
-            <el-menu :default-active="this.$root.$data.state.curProject.name">
-                <el-menu-item v-for="project in this.$root.$data.state.projects" :index="project.name"
-                              @click="$root.$data.setCurrentProject(project)">
+            <el-menu :default-active="curProject ? curProject.name : this.$root.$data.state.projects[0].name"
+                     v-if="this.$root.$data.state.projects.length>0">
+                <el-menu-item v-for="project in this.$root.$data.state.projects"
+                              :index="project.name"
+                              @click="curProject = project">
                     <i class="el-icon-menu"></i>
                     <span slot="title">
                         {{project.name}}
@@ -37,32 +39,32 @@
             </el-form>
         </el-dialog>
         <el-main>
-            <el-row class="project-detail">
+            <el-row class="project-detail" v-if="curProject">
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(this.$root.$data.state.curProject.totalTime/60).toFixed(1)}}</p>
+                            {{(curProject.totalTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">预计用时(h)</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{this.$root.$data.state.curProject.pending}}</p>
+                            {{curProject.pending}}</p>
                         <p style="font-size: .7em;margin: 0">待完成任务</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(this.$root.$data.state.curProject.usedTime/60).toFixed(1)}}</p>
+                            {{(curProject.usedTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">已用时间(h)</p>
                     </div>
                 </el-col>
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{this.$root.$data.state.curProject.total-this.$root.$data.state.curProject.pending}}</p>
+                            {{curProject.total-curProject.pending}}</p>
                         <p style="font-size: .7em;margin: 0">已完成任务</p>
                     </div>
                 </el-col>
@@ -87,12 +89,12 @@
                     </el-form-item>
                 </el-form>
                 <el-table
-                        v-if="this.$root.$data.state.curProject.tasks.length > 0"
+                        v-if="curProject && curProject.tasks.length > 0"
                         class="tasks"
                         max-height="700"
                         height="550"
                         :show-header="false"
-                        :data="this.$root.$data.state.curProject.tasks">
+                        :data="curProject.tasks">
                     <el-table-column
                             prop="createTimeString"
                             align="center"
@@ -209,7 +211,7 @@
                 callback();
             };
             let checkTask = (rule, value, callback) => {
-                if (this.$root.$data.state.curProject.hasTask(value)) {
+                if (this.curProject.tasks.filter(task => task.name === value).length > 0) {
                     return callback(new Error('任务已存在'));
                 }
                 callback();
@@ -239,7 +241,8 @@
                         {required: true, message: '请输入任务名称', trigger: 'focus'},
                         {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'focus'}
                     ]
-                }
+                },
+                curProject: this.$root.$data.state.projects[0]
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿import Mock from 'mockjs';
-import PROJECTS from 'project-mock'
+import {PROJECTS} from './project-mock'
 import {CODE_FAILED, CODE_REQUEST_NOT_SUPPORTED, CODE_SUCCESS, CREATE, DELETE, RETRIEVE, UPDATE} from "./constant";
 
 Mock.mock('/task', 'post', request => {
@@ -58,6 +58,8 @@ function deleteTask(task) {
 function updateTask(task) {
     if (PROJECTS.has(task.project) && PROJECTS.get(task.project).hasTask(task.name)) {
         PROJECTS.get(task.project).completeTask(task);
+        return true;
     }
+    return false;
 }
 

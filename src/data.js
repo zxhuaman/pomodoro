@@ -1,12 +1,10 @@
-﻿import Project from "./project";
-import Axios from 'axios';
-import {CODE_SUCCESS, CREATE, DELETE, RETRIEVE} from "./mock/constant";
+﻿import Axios from 'axios';
+import {CODE_SUCCESS, CREATE, DELETE, RETRIEVE, UPDATE} from "./mock/constant";
 
 export const data = {
     debug: true,
     state: {
         projects: [],
-        curProject: new Project('今天'),
         login: false
     },
     getProjects() {
@@ -31,6 +29,7 @@ export const data = {
         }).then(res => {
             console.log(res.data.projects)
             this.state.projects = res.data.projects;
+            this.state.projects.clear()
         }).catch(error => {
             console.log(error)
         });
@@ -45,24 +44,38 @@ export const data = {
         }).then(res => {
             this.state.projects = res.data.projects;
         }).catch(error => {
-            console.log(error)
+            console.log(error);
         });
     },
     addTask(task) {
-        this.state.curProject.addTask(task)
-        this.state.projects = this.state.projects.slice(0)
+        Axios.post('/task', {
+            type: CREATE,
+            task: task
+        }).then(res => {
+            if (res.data.code === CODE_SUCCESS) {
+                this.getProjects();
+            }
+        }).catch(error => console.log(error));
     },
     removeTask(task) {
-        this.state.curProject.removeTask(task)
-        this.state.projects = this.state.projects.slice(0)
+        Axios.post('/task', {
+            type: DELETE,
+            task: task
+        }).then(res => {
+            if (res.data.code === CODE_SUCCESS) {
+                this.getProjects();
+            }
+        }).catch(error => console.log(error));
     },
     completeTask(task) {
-        this.state.curProject.completeTask(task)
-        this.state.projects = this.state.projects.slice(0)
-    },
-    setCurrentProject(project) {
-        this.state.curProject = project
-        this.state.projects = this.state.projects
+        Axios.post('/task', {
+            type: UPDATE,
+            task: task
+        }).then(res => {
+            if (res.data.code === CODE_SUCCESS) {
+                this.getProjects();
+            }
+        }).catch(error => console.log(error));
     },
     login(username, password) {
         if (this.debug) {
