@@ -54,7 +54,7 @@ function createProject(project) {
     if (PROJECTS.has(project.name)) {
         return false;
     }
-    PROJECTS.set(project.name, project);
+    PROJECTS.set(project.name, new Project(project.name));
 }
 
 function retrieveProject(project) {
