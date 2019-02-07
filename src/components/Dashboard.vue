@@ -1,27 +1,9 @@
 <template>
     <div>
-        <el-row class="select">
-            <el-col :span="8">
-                <el-select placeholder="请选择" v-model="selectProject" @focus="fromDate=null;toDate=null">
-                    <el-option
-                            v-for="project in $root.$data.state.projects"
-                            :key="project.name"
-                            :label="project.name"
-                            :value="project.name">
-                    </el-option>
-                </el-select>
-            </el-col>
-            <el-col :span="7">
-                <el-date-picker v-model="fromDate" @focus="selectProject=''"></el-date-picker>
-            </el-col>
-            <el-col :span="2">_</el-col>
-            <el-col :span="7">
-                <el-date-picker v-model="toDate" @focus="selectProject=''"></el-date-picker>
-            </el-col>
-        </el-row>
-        <div class="chart-panel">
+        <el-date-picker v-model="fromDate"></el-date-picker>
+        <span> - </span>
+        <el-date-picker v-model="toDate"></el-date-picker>
             <div id="chart"></div>
-        </div>
     </div>
 </template>
 
@@ -59,8 +41,6 @@
         },
         data: function () {
             return {
-                // projects: this.$root.$data.state.projects,
-                selectProject: '',
                 fromDate: null,
                 toDate: null,
                 g2: null,
@@ -70,14 +50,13 @@
 </script>
 
 <style scoped>
-    .select {
-        margin: 1em 15%;
+    div {
+        text-align: center;
+        margin: 1em auto;
     }
 
-    .chart-panel {
-        width: 100%;
-
-        margin: 3em auto;
+    .chart {
+        margin: 3em auto 0 auto;
         text-align: center;
     }
 
