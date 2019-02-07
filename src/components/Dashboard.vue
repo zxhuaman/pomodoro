@@ -48,7 +48,7 @@
                 if (!this.chart) {
                     this.chart = new G2.Chart({
                         container: 'chart',
-                        forceFit: true,
+                        width:window.innerWidth-200,
                         height: window.innerHeight - 200,
                         padding: 'auto'
                     });
