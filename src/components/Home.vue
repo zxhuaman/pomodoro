@@ -146,7 +146,6 @@
         name: "Home",
         computed: {
             username() {
-                // 我们很快就会看到 `params` 是什么
                 return this.$route.params.username
             },
             curProject: function () {
