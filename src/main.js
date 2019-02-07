@@ -18,13 +18,19 @@ const router = new VueRouter({
     mode: 'history',
     base: __dirname,
     routes: [
-        {path: '/pomodoro/', component: Login},
         {path: '/pomodoro/home', component: Home},
         {path: '/pomodoro/login', component: Login},
         {path: '/pomodoro/dashboard', component: Dashboard},
     ]
 })
 
+router.beforeEach((to, from, next) => {
+    if (to.path !== '/pomodoro/login' && !data.state.login) {
+        next('/pomodoro/login');
+    } else {
+        next(true);
+    }
+});
 
 new Vue({
     el: '#app',

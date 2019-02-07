@@ -29,7 +29,6 @@ export const data = {
         }).then(res => {
             console.log(res.data.projects)
             this.state.projects = res.data.projects;
-            this.state.projects.clear()
         }).catch(error => {
             console.log(error)
         });
