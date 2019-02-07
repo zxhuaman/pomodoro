@@ -3,7 +3,7 @@
         <el-date-picker v-model="fromDate"></el-date-picker>
         <span> - </span>
         <el-date-picker v-model="toDate"></el-date-picker>
-            <div id="chart"></div>
+        <div id="chart"></div>
     </div>
 </template>
 
@@ -20,6 +20,24 @@
         computed: {
             projects: function () {
                 return this.$root.$data.state.projects;
+            },
+            chartData: function () {
+                const data = [];
+                this.$root.$data.state.projects.forEach(project => {
+                    data.push({
+                        'name': project.name,
+                        'type': '任务总数',
+                        'value': project.total
+                    });
+                });
+                this.$root.$data.state.projects.forEach(project => {
+                    data.push({
+                        'name': project.name,
+                        'type': '已完成任务',
+                        'value': project.total - project.pending
+                    });
+                });
+                return data;
             }
         },
         mounted: function () {
@@ -27,23 +45,53 @@
         },
         methods: {
             renderChart() {
-                if (!this.g2) {
-                    this.g2 = new G2.Chart({
+                if (!this.chart) {
+                    this.chart = new G2.Chart({
                         container: 'chart',
-                        width: 1000,
-                        height: 500
-                    })
+                        forceFit: true,
+                        height: window.innerHeight - 200,
+                        padding: 'auto'
+                    });
                 }
-                this.g2.source(this.projects);
-                this.g2.interval().position('name*total').color('total');
-                this.g2.render();
+                this.chart.source(this.chartData);
+
+                this.chart.axis('name', {
+                    label: {
+                        textStyle: {
+                            fill: '#aaaaaa'
+                        }
+                    },
+                    tickLine: {
+                        alignWithLabel: false,
+                        length: 0
+                    }
+                });
+
+                this.chart.axis('value', {
+                    label: {
+                        textStyle: {
+                            fill: '#aaaaaa'
+                        }
+                    },
+                    title: {
+                        offset: 50
+                    }
+                });
+                this.chart.legend({
+                    position: 'top-center'
+                });
+                this.chart.interval().position('name*value').color('type').opacity(1).adjust([{
+                    type: 'dodge',
+                    marginRatio: 1 / 32
+                }]);
+                this.chart.render();
             }
         },
         data: function () {
             return {
                 fromDate: null,
                 toDate: null,
-                g2: null,
+                chart: null,
             }
         }
     }
@@ -55,7 +103,7 @@
         margin: 1em auto;
     }
 
-    .chart {
+    #chart {
         margin: 3em auto 0 auto;
         text-align: center;
     }
