@@ -93,6 +93,7 @@
                         class="tasks"
                         max-height="700"
                         height="550"
+                        row-dbclick=""
                         :show-header="false"
                         :data="curProject.tasks">
                     <el-table-column
@@ -103,7 +104,8 @@
                     <el-table-column
                             prop="name"
                             align="center"
-                            label="任务名">
+                            label="任务名"
+                    >
                     </el-table-column>
                     <el-table-column
                             prop="totalTime"
@@ -202,7 +204,7 @@
             },
             removeTask(task) {
                 this.$root.$data.removeTask(task);
-            }
+            },
         },
         data: function () {
             let checkProject = (rule, value, callback) => {

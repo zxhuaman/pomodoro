@@ -10,6 +10,7 @@ import {data} from "./data";
 import './mock/login-mock';
 import './mock/project-mock';
 import './mock/task-mock';
+import Countdown from "./components/Countdown";
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -21,16 +22,17 @@ const router = new VueRouter({
         {path: '/pomodoro/home', component: Home},
         {path: '/pomodoro/login', component: Login},
         {path: '/pomodoro/dashboard', component: Dashboard},
+        {path: '/pomodoro/countdown', component: Countdown},
     ]
 })
 
-router.beforeEach((to, from, next) => {
+/*router.beforeEach((to, from, next) => {
     if (to.path !== '/pomodoro/login' && !data.state.login) {
         next('/pomodoro/login');
     } else {
         next(true);
     }
-});
+});*/
 
 new Vue({
     el: '#app',
