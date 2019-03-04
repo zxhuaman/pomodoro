@@ -11,6 +11,7 @@ import './mock/login-mock';
 import './mock/project-mock';
 import './mock/task-mock';
 import Countdown from "./components/Countdown";
+import Gitee from "./model/gitee";
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -26,13 +27,13 @@ const router = new VueRouter({
     ]
 })
 
-/*router.beforeEach((to, from, next) => {
-    if (to.path !== '/pomodoro/login' && !data.state.login) {
+router.beforeEach((to, from, next) => {
+    if (to.path !== '/pomodoro/login' && !Gitee.token) {
         next('/pomodoro/login');
     } else {
         next(true);
     }
-});*/
+});
 
 new Vue({
     el: '#app',

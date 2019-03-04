@@ -17,7 +17,8 @@
 </template>
 
 <script>
-    import {CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../mock/constant";
+    import {CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../mock/constant"
+    import Gitee from "../model/gitee";
 
     export default {
         name: "Login",
@@ -25,14 +26,27 @@
             onSubmit(ref) {
                 this.$refs[ref].validate((valid) => {
                     if (!valid) {
-                        return false;
+                        return false
                     }
-                    this.$root.$data.login(this.loginForm.username, this.loginForm.password)
+                    Gitee.login(this.loginForm.username, this.loginForm.password)
+                        .then(token => {
+                            console.log(token)
+                            Gitee.setToken(token)
+                            this.$router.push('/pomodoro/home')
+                        })
+                        .catch(() => this.$message({
+                            message: '请求失败',
+                            type: 'error',
+                            center: true,
+                            duration: 1000
+                        }))
+                    return true
+                    /*this.$root.$data.login(this.loginForm.username, this.loginForm.password)
                         .then(code => {
                             if (this.$root.$data.state.login) {
-                                this.resetForm(ref);
-                                this.$router.push('/pomodoro/home');
-                                return true;
+                                this.resetForm(ref)
+                                this.$router.push('/pomodoro/home')
+                                return true
                             }
                             switch (code) {
                                 case CODE_USERNAME_NONEXISTENT:
@@ -41,18 +55,18 @@
                                         type: 'error',
                                         center: true,
                                         duration: 1000
-                                    });
-                                    break;
+                                    })
+                                    break
                                 case CODE_WRONG_PASSWORD:
                                     this.$message({
                                         message: '密码错误',
                                         type: 'error',
                                         center: true,
                                         duration: 1000
-                                    });
-                                    break;
+                                    })
+                                    break
                                 default:
-                                    break;
+                                    break
                             }
                         })
                         .catch(error => {
@@ -61,20 +75,20 @@
                                 type: 'error',
                                 center: true,
                                 duration: 1000
-                            });
-                        });
+                            })
+                        })*/
 
-                });
+                })
             },
             resetForm(ref) {
-                this.$refs[ref].resetFields();
+                this.$refs[ref].resetFields()
             }
         },
         data: function () {
             return {
                 loginForm: {
                     ref: 'login',
-                    username: 'axiao',
+                    username: 'xiaogege',
                     password: '123456'
                 },
                 loginRules: {

@@ -8,17 +8,17 @@
         methods: {
             countdown: function () {
                 if (this.time > 0) {
-                    this.time -= 1;
+                    this.time -= 1
                 }
             }
         },
         computed: {
             timeStr: function () {
-                return parseInt(this.time / 60) + ":" + this.time % 60;
+                return parseInt(this.time / 60) + ":" + this.time % 60
             }
         },
         mounted: function () {
-            window.setInterval(this.countdown, 1000);
+            window.setInterval(this.countdown, 1000)
         },
         destroyed: function () {
             window.clearInterval(this.countdown())
@@ -26,7 +26,7 @@
         data: function () {
             return {
                 time: 60,
-            };
+            }
         }
     }
 </script>

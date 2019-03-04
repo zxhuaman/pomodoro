@@ -8,40 +8,40 @@
 </template>
 
 <script>
-    import G2 from '@antv/g2';
+    import G2 from '@antv/g2'
 
     export default {
         name: "Dashboard",
         watch: {
             projects: function () {
-                this.renderChart();
+                this.renderChart()
             }
         },
         computed: {
             projects: function () {
-                return this.$root.$data.state.projects;
+                return this.$root.$data.state.projects
             },
             chartData: function () {
-                const data = [];
+                const data = []
                 this.$root.$data.state.projects.forEach(project => {
                     data.push({
                         'name': project.name,
                         'type': '任务总数',
                         'value': project.total
-                    });
-                });
+                    })
+                })
                 this.$root.$data.state.projects.forEach(project => {
                     data.push({
                         'name': project.name,
                         'type': '已完成任务',
                         'value': project.total - project.pending
-                    });
-                });
-                return data;
+                    })
+                })
+                return data
             }
         },
         mounted: function () {
-            this.renderChart();
+            this.renderChart()
         },
         methods: {
             renderChart() {
@@ -51,9 +51,9 @@
                         width:window.innerWidth-200,
                         height: window.innerHeight - 200,
                         padding: 'auto'
-                    });
+                    })
                 }
-                this.chart.source(this.chartData);
+                this.chart.source(this.chartData)
 
                 this.chart.axis('name', {
                     label: {
@@ -65,7 +65,7 @@
                         alignWithLabel: false,
                         length: 0
                     }
-                });
+                })
 
                 this.chart.axis('value', {
                     label: {
@@ -76,15 +76,15 @@
                     title: {
                         offset: 50
                     }
-                });
+                })
                 this.chart.legend({
                     position: 'top-center'
-                });
+                })
                 this.chart.interval().position('name*value').color('type').opacity(1).adjust([{
                     type: 'dodge',
                     marginRatio: 1 / 32
-                }]);
-                this.chart.render();
+                }])
+                this.chart.render()
             }
         },
         data: function () {

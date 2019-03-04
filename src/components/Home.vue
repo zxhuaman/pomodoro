@@ -1,9 +1,9 @@
 <template>
     <el-container>
         <el-aside>
-            <el-menu :default-active="curProject ? curProject.name : this.$root.$data.state.projects[0].name"
-                     v-if="this.$root.$data.state.projects.length>0">
-                <el-menu-item v-for="(project, index) in this.$root.$data.state.projects"
+            <el-menu :default-active="curProject ? curProject.name : projects[0].name"
+                     v-if="projects.length>0">
+                <el-menu-item v-for="(project, index) in projects"
                               :index="project.name"
                               @click="curIndex = index">
                     <i class="el-icon-menu"></i>
@@ -43,7 +43,7 @@
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(curProject.totalTime/60).toFixed(1)}}</p>
+                            {{estimatedTime}}</p>
                         <p style="font-size: .7em;margin: 0">预计用时(h)</p>
                     </div>
                 </el-col>
@@ -57,7 +57,7 @@
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(curProject.usedTime/60).toFixed(1)}}</p>
+                            {{usedTime}}</p>
                         <p style="font-size: .7em;margin: 0">已用时间(h)</p>
                     </div>
                 </el-col>
@@ -141,18 +141,35 @@
 </template>
 
 <script>
-    import Project from '../project';
-    import Task from "../task";
+    import Project from '../model/project'
+    import Task from "../model/task"
+    import Gitee from "../model/gitee";
 
     export default {
         name: "Home",
+        beforeMount: function () {
+            Gitee.getProjects().then(projects => {
+                this.projects = projects
+            })
+        },
         computed: {
             username() {
                 return this.$route.params.username
             },
             curProject: function () {
-                return this.$root.$data.state.projects[this.curIndex];
-            }
+                return this.projects[this.curIndex]
+            },
+            estimatedTime: function () {
+                let time = 0
+                this.curProject.tasks.forEach(task => time += task.totalTime)
+                return (time / 60).toFixed(1)
+            },
+            usedTime: function () {
+                let time = 0
+                this.curProject.tasks.forEach(task => time += task.usedTime)
+                return (time / 60).toFixed(1)
+            },
+
         },
         methods: {
             goBack() {
@@ -161,64 +178,63 @@
                     : this.$router.push('/')
             },
             addProject(name) {
-                this.dialogVisible = false;
-                const project = new Project(name);
-                this.$root.$data.addProject(project);
+                this.dialogVisible = false
+                const project = new Project(name)
+                Gitee.addProject(project).then(project => this.projects.push(project))
             },
             addTask(name, tomato) {
-                const task = new Task(name, tomato * 25);
-                task.project = this.curProject.name;
-                this.$root.$data.addTask(task)
+                const task = new Task(name, new Date().getTime(), tomato * 25, 0, this.curProject.name)
+                Gitee.addTask(task)
             },
             submitForm(ref) {
                 if (this.addProjectForm.ref === ref) {
                     this.$refs[ref].validate((valid) => {
                         if (valid) {
-                            this.addProject(this.addProjectForm.name);
-                            this.resetForm(ref);
+                            this.addProject(this.addProjectForm.name)
+                            this.resetForm(ref)
                         } else {
-                            return false;
+                            return false
                         }
-                    });
+                    })
                 } else if (this.addTaskForm.ref === ref) {
                     this.$refs[ref].validate((valid) => {
                         if (valid) {
-                            this.addTask(this.addTaskForm.name, this.addTaskForm.tomato);
-                            this.resetForm(ref);
+                            this.addTask(this.addTaskForm.name, this.addTaskForm.tomato)
+                            this.resetForm(ref)
                         } else {
-                            return false;
+                            return false
                         }
-                    });
+                    })
                 }
             },
             resetForm(ref) {
-                this.$refs[ref].resetFields();
+                this.$refs[ref].resetFields()
                 if (this.addProjectForm.ref === ref) {
-                    this.dialogVisible = false;
+                    this.dialogVisible = false
                 } else if (this.addTaskForm.ref === ref) {
-                    this.addTaskForm.tomato = 1;
+                    this.addTaskForm.tomato = 1
                 }
             },
             completeTask(taskName) {
-                this.$root.$data.completeTask(taskName);
+                this.$root.$data.completeTask(taskName)
             },
             removeTask(task) {
-                this.$root.$data.removeTask(task);
+                this.$root.$data.removeTask(task)
             },
         },
         data: function () {
             let checkProject = (rule, value, callback) => {
                 if (this.$root.$data.state.projects.filter(v => v.name === value).length > 0) {
-                    return callback(new Error('项目已存在'));
+                    return callback(new Error('项目已存在'))
                 }
-                callback();
-            };
+                callback()
+            }
             let checkTask = (rule, value, callback) => {
                 if (this.curProject.tasks.filter(task => task.name === value).length > 0) {
-                    return callback(new Error('任务已存在'));
+                    return callback(new Error('任务已存在'))
                 }
-                callback();
-            };
+                callback()
+            }
             return {
                 newProject: new Project('新建项目'),
                 dialogVisible: false,
@@ -245,7 +261,8 @@
                         {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'focus'}
                     ]
                 },
-                curIndex: 0
+                curIndex: 0,
+                projects: []
             }
         }
     }
