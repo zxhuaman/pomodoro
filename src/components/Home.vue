@@ -43,7 +43,7 @@
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{estimatedTime}}</p>
+                            {{(curProject.totalTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">预计用时(h)</p>
                     </div>
                 </el-col>
@@ -57,7 +57,7 @@
                 <el-col :span="6">
                     <div class="grid-content">
                         <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{usedTime}}</p>
+                            {{(curProject.usedTime/60).toFixed(1)}}</p>
                         <p style="font-size: .7em;margin: 0">已用时间(h)</p>
                     </div>
                 </el-col>
@@ -142,15 +142,13 @@
 
 <script>
     import Project from '../model/project'
-    import Task from "../model/task"
-    import Gitee from "../model/gitee";
+    import Gitee from "../model/gitee"
+    import {Task} from "../model/task";
 
     export default {
         name: "Home",
         beforeMount: function () {
-            Gitee.getProjects().then(projects => {
-                this.projects = projects
-            })
+            Gitee.getProjects().then(projects => this.projects = projects)
         },
         computed: {
             username() {
@@ -158,18 +156,7 @@
             },
             curProject: function () {
                 return this.projects[this.curIndex]
-            },
-            estimatedTime: function () {
-                let time = 0
-                this.curProject.tasks.forEach(task => time += task.totalTime)
-                return (time / 60).toFixed(1)
-            },
-            usedTime: function () {
-                let time = 0
-                this.curProject.tasks.forEach(task => time += task.usedTime)
-                return (time / 60).toFixed(1)
-            },
-
+            }
         },
         methods: {
             goBack() {
@@ -179,12 +166,21 @@
             },
             addProject(name) {
                 this.dialogVisible = false
-                const project = new Project(name)
-                Gitee.addProject(project).then(project => this.projects.push(project))
+                const project = new Project(name, new Date().getTime())
+                Gitee.addProject(project).then(project => {
+                    this.projects.push(project)
+                    setTimeout(() => this.curIndex = this.projects.length - 1, 100)
+                })
             },
             addTask(name, tomato) {
                 const task = new Task(name, new Date().getTime(), tomato * 25, 0, this.curProject.name)
-                Gitee.addTask(task)
+                Gitee.addTask(task).then(value => {
+                    this.projects.forEach((project, index) => {
+                        if (project.name === value.project) {
+                            this.projects[index].addTask(value)
+                        }
+                    })
+                })
             },
             submitForm(ref) {
                 if (this.addProjectForm.ref === ref) {

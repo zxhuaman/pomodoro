@@ -7,9 +7,6 @@ import VueRouter from "vue-router";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import {data} from "./data";
-import './mock/login-mock';
-import './mock/project-mock';
-import './mock/task-mock';
 import Countdown from "./components/Countdown";
 import Gitee from "./model/gitee";
 

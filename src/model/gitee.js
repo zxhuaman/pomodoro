@@ -1,6 +1,6 @@
 import Axios from 'axios'
 import {Base64} from 'js-base64'
-import Project from "../project";
+import Project from "./project";
 
 const base_url = 'https://Gitee.com/api/v5'
 
@@ -30,37 +30,45 @@ export default class Gitee {
                     'message': `add project ${project.name}`
                 },
                 {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
-                .then(function (res) {
-                    project.sha = res.data.content.sha
-                    return project
-                })
+                .then(() => project)
         }
         return new Promise((resolve, reject) => reject());
     }
 
     static updateProject(project) {
+        console.log(this.token, project)
         if (this.token) {
-            return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`, {
-                'access_token': this.token,
-                'content': Base64.encode(JSON.stringify(project)),
-                'sha': project.sha,
-                'message': `update ${project.name}`
-            }).then(res => this.getProject(new Project(res.data.content.name.split('.')[0], 0, res.data.content.sha)))
+            return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name+'.project'}`,
+                {
+                    'access_token': this.token,
+                    'content': Base64.encode(JSON.stringify(project, ['name', 'createTime', 'tasks'])),
+                    'sha': project.sha,
+                    'message': `update ${project.name}`
+                })
+                .then(() => project)
         }
         return new Promise((resolve, reject) => reject())
     }
 
+    static getTrees() {
+        if (this.token) {
+            return Axios
+                .get(`${base_url}/repos/mdbook/pomodoro/git/gitee/trees/master?access_token=${this.token}`,
+                    {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
+                .then(res => {
+                    const trees = res.data.tree.filter(value => value.path.endsWith('.project'))
+                    return trees
+                })
+        }
+    }
+
     static getProjects() {
         if (this.token) {
-            return Axios.get(`${base_url}/repos/mdbook/pomodoro/git/gitee/trees/master?access_token=${this.token}`,
-                {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
-                .then(function (res) {
-                    const projects = []
-                    res.data.tree.filter(value => value.path.endsWith('.project'))
-                        .forEach(value =>
-                            Gitee.getProject({sha: value.sha}).then(project => projects.push(project))
-                    return projects
-                })
+            return Gitee.getTrees().then(function (trees) {
+                const promises = []
+                trees.forEach(value => promises.push(Gitee.getProject(value)))
+                return Promise.all(promises)
+            })
         }
         return new Promise((resolve, reject) => reject)
     }
@@ -83,14 +91,19 @@ export default class Gitee {
     }
 
     static addTask(task) {
-        this.getProjects().then(function (res) {
-            const projects = res.filter(value => value.name === task.project);
-            if (projects.length == 1) {
-                const project = projects[0];
-                project.tasks.push(task);
-                return Gitee.updateProject(project);
+        return Gitee.getTrees().then(trees => {
+            const filterProjects = trees.filter(value => value.path === (task.project + '.project'));
+            if (filterProjects.length == 1) {
+                const tree = filterProjects[0]
+                return Gitee.getProject(tree).then(project => {
+                    project.sha = tree.sha
+                    project.addTask(task)
+                    return Gitee.updateProject(project).then(() => task)
+                })
             }
+            throw new Error()
         })
+
 
     }
 
