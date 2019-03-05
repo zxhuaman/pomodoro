@@ -97,9 +97,22 @@
                         :show-header="false"
                         :data="curProject.tasks">
                     <el-table-column
-                            prop="createTimeString"
+                            prop="state"
+                            align="center"
+                            label="">
+                        <template slot-scope="scope">
+                            <i v-if="scope.row.state!=='processing'" class="el-icon-caret-right"
+                               @click="updateTaskState(scope.row, 'processing')"></i>
+                            <i v-else class="el-icon-time" @click="updateTaskState(scope.row, 'uncompleted')"></i>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="createTime"
                             align="center"
                             label="创建时间">
+                        <template slot-scope="scope">
+                            {{getDateString(scope.row.createTime)}}
+                        </template>
                     </el-table-column>
                     <el-table-column
                             prop="name"
@@ -182,6 +195,14 @@
                     })
                 })
             },
+            updateTaskState(task, state) {
+                this.projects.forEach(project => {
+                    if (project.name === task.project) {
+                        task.state = state
+                        project.updateTask(task)
+                    }
+                })
+            },
             submitForm(ref) {
                 if (this.addProjectForm.ref === ref) {
                     this.$refs[ref].validate((valid) => {
@@ -217,6 +238,11 @@
             removeTask(task) {
                 this.$root.$data.removeTask(task)
             },
+            getDateString(time) {
+                const date = new Date()
+                date.setTime(time)
+                return date.toLocaleDateString()
+            }
         },
         data: function () {
             let checkProject = (rule, value, callback) => {

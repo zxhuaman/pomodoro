@@ -6,7 +6,7 @@ export class Task {
     project;
     state;
 
-    constructor(name, createTime, totalTime, usedTime, project, state = UNCOMPLETED) {
+    constructor(name, createTime, totalTime, usedTime, project, state = 'uncompleted') {
         this.name = name;
         this.createTime = createTime;
         this.totalTime = totalTime;

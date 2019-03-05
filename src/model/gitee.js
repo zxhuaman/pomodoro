@@ -36,9 +36,8 @@ export default class Gitee {
     }
 
     static updateProject(project) {
-        console.log(this.token, project)
         if (this.token) {
-            return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name+'.project'}`,
+            return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
                 {
                     'access_token': this.token,
                     'content': Base64.encode(JSON.stringify(project, ['name', 'createTime', 'tasks'])),
@@ -87,7 +86,19 @@ export default class Gitee {
     }
 
     static removeProject(project) {
-        //todo
+        return Gitee.getTrees().then(trees => {
+            const filter = trees.filter(tree => tree.path === (project.name + '.project'))
+            if (filter.length = 1) {
+                return Axios.delete(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
+                    {
+                        'access_token': this.token,
+                        'sha': filter[0].sha,
+                        'message': `delete ${project.name}`
+                    })
+                    .then(() => true)
+            }
+            throw new Error()
+        })
     }
 
     static addTask(task) {
@@ -103,8 +114,6 @@ export default class Gitee {
             }
             throw new Error()
         })
-
-
     }
 
     static removeTask(task) {

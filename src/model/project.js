@@ -50,6 +50,11 @@ export default class Project {
         return this.tasksMap.get(name);
     }
 
+    updateTask(task) {
+        this.removeTask(task)
+        this.addTask(task)
+    }
+
     completeTask(name) {
         const task = this.tasksMap.get(name);
         if (task != null) {
