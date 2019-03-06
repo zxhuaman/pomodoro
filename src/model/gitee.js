@@ -120,6 +120,27 @@ export default class Gitee {
     }
 
     static removeTask(task) {
-        //todo
+        return Gitee.getTrees().then(trees => {
+            const filterProjects = trees.filter(value => value.path === (task.project + '.project'));
+            if (filterProjects.length == 1) {
+                const tree = filterProjects[0]
+                return Gitee.getProject(tree).then(project => {
+                    project.sha = tree.sha
+                    let i = -1;
+                    project.tasks.forEach(((value, index) => {
+                        if (value.name === task.name) {
+                            i = index;
+                        }
+                    }))
+                    if (i > -1) {
+                        project.tasks.splice(i, 1);
+                        return Gitee.updateProject(project).then(() => task);
+                    } else {
+                        throw new Error()
+                    }
+                })
+            }
+            throw new Error()
+        })
     }
 }

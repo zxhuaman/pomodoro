@@ -1,21 +1,7 @@
 <template>
     <el-container>
         <el-aside>
-            <!--<el-menu class="projects" :default-active="curProject.name"
-                     v-if="curProject">
-                <el-menu-item v-for="(project, index) in projects"
-                              :index="project.name"
-                              @click="curIndex = index">
-                    <i class="el-icon-menu"></i>
-                    <span slot="title">
-                        {{project.name}}
-                        <el-badge class="mark" :value="project.pending" :hidden="project.pending===0"/>
-                    <i class="el-icon-delete"></i>
-                    </span>
-                </el-menu-item>
-            </el-menu>-->
             <el-table
-                    v-if="projects.length>0"
                     ref="projectTable"
                     :data="projects"
                     height="80%"
@@ -28,6 +14,7 @@
                     <template slot-scope="scope">
                         <i class="el-icon-menu"></i>
                         <span style="margin-left: 10px">{{ scope.row.name}}</span>
+                        <el-badge class="mark" :value="scope.row.pending" :hidden="scope.row.pending===0"/>
                     </template>
                 </el-table-column>
                 <el-table-column>
@@ -195,9 +182,6 @@
         computed: {
             username() {
                 return this.$route.params.username
-            },
-            curProject: function () {
-                return this.projects[this.curIndex]
             }
         },
         methods: {
@@ -231,8 +215,17 @@
                     })
                 })
             },
+            completeTask(task) {
+                this.projectMap.get(task.project).completeTask(task)
+                this.projects = Array.from(this.projectMap.values())
+            },
+            removeTask(task) {
+                Gitee.removeTask(task).then(() => {
+                    this.projectMap.get(task.project).removeTask(task)
+                    this.projects = Array.from(this.projectMap.values())
+                }).catch(err => console.log(err))
+            },
             updateTaskState(task, state) {
-                console.log(task, state)
                 this.projects.forEach(project => {
                     if (project.name === task.project) {
                         task.state = state
@@ -270,21 +263,14 @@
                     this.addTaskForm.tomato = 1
                 }
             },
-            completeTask(task) {
-                this.projectMap.get(task.project).completeTask(task)
-                this.projects = Array.from(this.projectMap.values())
-            },
-            removeTask(task) {
-                this.projectMap.get(task.project).removeTask(task)
-                this.projects = Array.from(this.projectMap.values())
-            },
             getDateString(time) {
                 const date = new Date()
                 date.setTime(time)
                 return date.toLocaleDateString()
             },
             handleCurrentChange(val) {
-                this.currentRow = val;
+                this.currentRow = val
+                this.curProject = val
             },
             projectMouseEnter(val) {
                 this.hoverProject = val
@@ -336,7 +322,8 @@
                 projects: [],
                 projectMap: new Map(),
                 currentRow: 0,
-                hoverProject: null
+                hoverProject: null,
+                curProject: null
             }
         }
     }
@@ -360,7 +347,7 @@
 
     .mark {
         margin-left: .5em;
-        margin-bottom: .25em;
+        margin-top: .25em;
     }
 
     .el-main {
