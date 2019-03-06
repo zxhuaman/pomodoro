@@ -241,8 +241,10 @@
                             project.updateTask(task)
                         }
                     })
+                    this.stopCountdown(this.curTask)
                 }
                 task.state = state;
+                this.curTask = task
                 this.projects.forEach(project => {
                     if (project.name === task.project) {
                         task.state = state
