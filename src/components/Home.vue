@@ -169,7 +169,7 @@
 <script>
     import Project from '../model/project'
     import Gitee from "../model/gitee"
-    import {Task} from "../model/task";
+    import {COMPLETED, Task} from "../model/task";
 
     export default {
         name: "Home",
@@ -216,8 +216,11 @@
                 })
             },
             completeTask(task) {
-                this.projectMap.get(task.project).completeTask(task)
-                this.projects = Array.from(this.projectMap.values())
+                task.state = COMPLETED
+                Gitee.updateTask(task).then(() => {
+                    this.projectMap.get(task.project).completeTask(task)
+                    this.projects = Array.from(this.projectMap.values())
+                })
             },
             removeTask(task) {
                 Gitee.removeTask(task).then(() => {
