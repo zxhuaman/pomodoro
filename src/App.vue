@@ -1,6 +1,6 @@
 <template>
-    <div id="app">
-        <el-header height="48px">
+    <el-container id="app">
+        <el-header>
             <router-link to="home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
             <router-link to="home" class="site-title">pomodoro</router-link>
             <router-link to="login" class="sign-in">
@@ -10,10 +10,12 @@
                 <img src="./assets/dashboard.png" alt="统计" title="统计">
             </router-link>
         </el-header>
-        <keep-alive>
-            <router-view></router-view>
-        </keep-alive>
-    </div>
+        <el-container>
+            <keep-alive>
+                <router-view></router-view>
+            </keep-alive>
+        </el-container>
+    </el-container>
 </template>
 
 <script>
@@ -67,6 +69,7 @@
         top: .5em;
         right: 4.5em;
     }
+
     .sign-in {
         position: absolute;
         top: .5em;

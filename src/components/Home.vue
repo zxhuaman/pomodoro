@@ -4,7 +4,7 @@
             <el-table
                     ref="projectTable"
                     :data="projects"
-                    height="80%"
+                    height="90%"
                     :show-header="false"
                     highlight-current-row
                     @cell-mouse-enter="projectMouseEnter"
@@ -33,6 +33,128 @@
                 </el-menu-item>
             </el-menu>
         </el-aside>
+        <el-container>
+            <el-header>
+                <el-row class="project-detail" v-if="curProject">
+                    <el-col :span="6">
+                        <div class="grid-content">
+                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                                {{(curProject.totalTime/60).toFixed(1)}}</p>
+                            <p style="font-size: .7em;margin: 0">预计用时(h)</p>
+                        </div>
+                    </el-col>
+                    <el-col :span="6">
+                        <div class="grid-content">
+                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                                {{curProject.pending}}</p>
+                            <p style="font-size: .7em;margin: 0">待完成任务</p>
+                        </div>
+                    </el-col>
+                    <el-col :span="6">
+                        <div class="grid-content">
+                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                                {{(curProject.usedTime/60).toFixed(1)}}</p>
+                            <p style="font-size: .7em;margin: 0">已用时间(h)</p>
+                        </div>
+                    </el-col>
+                    <el-col :span="6">
+                        <div class="grid-content">
+                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
+                                {{curProject.total-curProject.pending}}</p>
+                            <p style="font-size: .7em;margin: 0">已完成任务</p>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-header>
+            <el-main>
+                <div class="task-panel" style="height: 100%">
+                    <el-form :model="addTaskForm"
+                             :rules="addTaskRules"
+                             :ref="addTaskForm.ref"
+                             @submit.native.prevent>
+
+                        <el-form-item prop="name">
+                            <el-input v-model="addTaskForm.name"
+                                      placeholder="请输入任务名称"
+                                      @keyup.enter.native="submitForm(addTaskForm.ref)">
+                                <el-rate
+                                        slot="append"
+                                        v-model="addTaskForm.tomato"
+                                        :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
+                                        void-icon-class="el-icon-tomato">
+                                </el-rate>
+                            </el-input>
+                        </el-form-item>
+                    </el-form>
+                    <el-table
+                            v-if="curProject && curProject.tasks.length > 0"
+                            size="mini"
+                            height="85%"
+                            row-dbclick=""
+                            :show-header="false"
+                            :data="curProject.tasks">
+                        <el-table-column
+                                prop="state"
+                                align="center"
+                                label="">
+                            <template slot-scope="scope">
+                                <i v-if="scope.row.state!=='processing'" class="el-icon-caret-right"
+                                   @click="updateTaskState(scope.row, 'processing')"></i>
+                                <i v-else class="el-icon-time" @click="updateTaskState(scope.row, 'uncompleted')"></i>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="createTime"
+                                align="center"
+                                label="创建时间">
+                            <template slot-scope="scope">
+                                {{getDateString(scope.row.createTime)}}
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="name"
+                                align="center"
+                                label="任务名"
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="totalTime"
+                                label="总时间(min)">
+                            <template slot-scope="scope">
+                                <el-rate
+                                        slot="append"
+                                        :max="scope.row.totalTime/25"
+                                        :value="scope.row.totalTime/25"
+                                        :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
+                                        void-icon-class="el-icon-tomato">
+                                </el-rate>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                                fixed="right"
+                                label="操作">
+                            <template slot-scope="scope">
+                                <el-button v-if="scope.row.state !== 'completed'"
+                                           @click="completeTask(scope.row)" size="mini"
+                                           icon="el-icon-check" title="完成"
+                                           circle>
+                                </el-button>
+                                <el-button @click="removeTask(scope.row)"
+                                           size="mini" icon="el-icon-delete" title="删除" circle></el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-main>
+            <el-footer style="height: 60px;text-align: center">
+                <div class="countdown" v-if="showCountdown">
+                    <el-button type="danger" icon="el-icon-time" round>
+                        {{parseInt(countdownTime/60)+':'+countdownTime%60}}
+                    </el-button>
+                </div>
+            </el-footer>
+        </el-container>
         <el-dialog
                 title="新建项目"
                 :visible.sync="dialogVisible"
@@ -51,123 +173,6 @@
                 </el-form-item>
             </el-form>
         </el-dialog>
-        <el-main>
-            <el-row class="project-detail" v-if="curProject">
-                <el-col :span="6">
-                    <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(curProject.totalTime/60).toFixed(1)}}</p>
-                        <p style="font-size: .7em;margin: 0">预计用时(h)</p>
-                    </div>
-                </el-col>
-                <el-col :span="6">
-                    <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{curProject.pending}}</p>
-                        <p style="font-size: .7em;margin: 0">待完成任务</p>
-                    </div>
-                </el-col>
-                <el-col :span="6">
-                    <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{(curProject.usedTime/60).toFixed(1)}}</p>
-                        <p style="font-size: .7em;margin: 0">已用时间(h)</p>
-                    </div>
-                </el-col>
-                <el-col :span="6">
-                    <div class="grid-content">
-                        <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                            {{curProject.total-curProject.pending}}</p>
-                        <p style="font-size: .7em;margin: 0">已完成任务</p>
-                    </div>
-                </el-col>
-            </el-row>
-            <div class="task-panel">
-                <el-form :model="addTaskForm"
-                         :rules="addTaskRules"
-                         :ref="addTaskForm.ref"
-                         @submit.native.prevent>
-
-                    <el-form-item prop="name">
-                        <el-input v-model="addTaskForm.name"
-                                  placeholder="请输入任务名称"
-                                  @keyup.enter.native="submitForm(addTaskForm.ref)">
-                            <el-rate
-                                    slot="append"
-                                    v-model="addTaskForm.tomato"
-                                    :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
-                                    void-icon-class="el-icon-tomato">
-                            </el-rate>
-                        </el-input>
-                    </el-form-item>
-                </el-form>
-                <el-table
-                        v-if="curProject && curProject.tasks.length > 0"
-                        class="tasks"
-                        height="250"
-                        size="mini"
-                        row-dbclick=""
-                        :show-header="false"
-                        :data="curProject.tasks">
-                    <el-table-column
-                            prop="state"
-                            align="center"
-                            label="">
-                        <template slot-scope="scope">
-                            <i v-if="scope.row.state!=='processing'" class="el-icon-caret-right"
-                               @click="updateTaskState(scope.row, 'processing')"></i>
-                            <i v-else class="el-icon-time" @click="updateTaskState(scope.row, 'uncompleted')"></i>
-                        </template>
-                    </el-table-column>
-                    <el-table-column
-                            prop="createTime"
-                            align="center"
-                            label="创建时间">
-                        <template slot-scope="scope">
-                            {{getDateString(scope.row.createTime)}}
-                        </template>
-                    </el-table-column>
-                    <el-table-column
-                            prop="name"
-                            align="center"
-                            label="任务名"
-                    >
-                    </el-table-column>
-                    <el-table-column
-                            prop="totalTime"
-                            label="总时间(min)">
-                        <template slot-scope="scope">
-                            <el-rate
-                                    slot="append"
-                                    :max="scope.row.totalTime/25"
-                                    :value="scope.row.totalTime/25"
-                                    :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
-                                    void-icon-class="el-icon-tomato">
-                            </el-rate>
-                        </template>
-                    </el-table-column>
-
-                    <el-table-column
-                            fixed="right"
-                            label="操作">
-                        <template slot-scope="scope">
-                            <el-button v-if="scope.row.state !== 'completed'"
-                                       @click="completeTask(scope.row)" size="mini"
-                                       icon="el-icon-check" title="完成"
-                                       circle>
-                            </el-button>
-                            <el-button @click="removeTask(scope.row)"
-                                       size="mini" icon="el-icon-delete" title="删除" circle></el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <div class="countdown" v-if="showCountdown">
-                    <el-button type="danger" icon="el-icon-time" round>
-                        {{parseInt(countdownTime/60)+':'+countdownTime%60}}
-                    </el-button>
-                </div>
-            </div>
-        </el-main>
     </el-container>
 </template>
 
@@ -308,7 +313,7 @@
             },
             stopCountdown(task) {
                 this.showCountdown = false
-                clearInterval(this.decrement)
+                clearInterval()
                 Gitee.updateTask(task).then(task => this.projectMap.get(task.project).updateTask(task))
                 this.projects = Array.from(this.projectMap.values())
             },
@@ -377,16 +382,8 @@
 <style scoped>
     @import "../assets/iconfont.css";
 
-    .el-container {
-        height: 100%;
-    }
-
     .el-aside {
         border-right: #909399 solid 1px;
-    }
-
-    .delete-project {
-        display: none;
     }
 
     .mark {
@@ -396,12 +393,7 @@
 
     .el-main {
         overflow-y: hidden;
-        padding: 0;
-    }
-
-    .project-detail {
-        width: 100%;
-        border-bottom: #909399 solid 1px;
+        padding: 1rem;
     }
 
     .grid-content {
@@ -409,13 +401,5 @@
         text-align: center;
     }
 
-    .task-panel {
-        padding: .8em;
-    }
-
-    .countdown {
-        font-size: 2.5rem;
-        text-align: center;
-    }
 
 </style>
