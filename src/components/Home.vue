@@ -104,8 +104,8 @@
                 <el-table
                         v-if="curProject && curProject.tasks.length > 0"
                         class="tasks"
-                        max-height="700"
-                        height="550"
+                        height="250"
+                        size="mini"
                         row-dbclick=""
                         :show-header="false"
                         :data="curProject.tasks">
@@ -161,6 +161,11 @@
                         </template>
                     </el-table-column>
                 </el-table>
+                <div class="countdown" v-if="showCountdown">
+                    <el-button type="danger" icon="el-icon-time" round>
+                        {{parseInt(countdownTime/60)+':'+countdownTime%60}}
+                    </el-button>
+                </div>
             </div>
         </el-main>
     </el-container>
@@ -169,7 +174,7 @@
 <script>
     import Project from '../model/project'
     import Gitee from "../model/gitee"
-    import {COMPLETED, Task} from "../model/task";
+    import {COMPLETED, PROCESSING, Task, UNCOMPLETED} from "../model/task";
 
     export default {
         name: "Home",
@@ -188,11 +193,6 @@
             }
         },
         methods: {
-            goBack() {
-                window.history.length > 1
-                    ? this.$router.go(-1)
-                    : this.$router.push('/')
-            },
             addProject(name) {
                 this.dialogVisible = false
                 const project = new Project(name, new Date().getTime())
@@ -234,13 +234,26 @@
                     })
             },
             updateTaskState(task, state) {
+                if (this.curTask) {
+                    this.curTask.state = this.curTask.totalTime - this.curTask.usedTime > 0 ? UNCOMPLETED : COMPLETED
+                    this.projects.forEach(project => {
+                        if (project.name === this.curTask.project) {
+                            project.updateTask(task)
+                        }
+                    })
+                }
+                task.state = state;
                 this.projects.forEach(project => {
                     if (project.name === task.project) {
                         task.state = state
                         project.updateTask(task)
                     }
                 })
-
+                if (state === PROCESSING) {
+                    this.countdown(task)
+                } else {
+                    this.stopCountdown(this.curProject)
+                }
             },
             submitForm(ref) {
                 if (this.addProjectForm.ref === ref) {
@@ -285,6 +298,24 @@
             },
             projectMouseLeave() {
                 this.hoverProject = null
+            },
+            countdown(task) {
+                this.showCountdown = true
+                this.countdownTime = (task.totalTime - task.usedTime) * 60
+                setInterval(this.decrement, 1000)
+            },
+            stopCountdown(task) {
+                this.showCountdown = false
+                clearInterval(this.decrement)
+                Gitee.updateTask(task).then(task => this.projectMap.get(task.project).updateTask(task))
+                this.projects = Array.from(this.projectMap.values())
+            },
+            decrement() {
+                if (this.countdownTime == 0) {
+                    this.stopCountdown(this.curTask)
+                } else {
+                    this.countdownTime -= 1
+                }
             }
         },
         data: function () {
@@ -331,7 +362,10 @@
                 projectMap: new Map(),
                 currentRow: 0,
                 hoverProject: null,
-                curProject: null
+                curProject: null,
+                curTask: null,
+                showCountdown: false,
+                countdownTime: 0
             }
         }
     }
@@ -345,8 +379,8 @@
         height: 100%;
     }
 
-    .projects {
-        height: 80%;
+    .el-aside {
+        border-right: #909399 solid 1px;
     }
 
     .delete-project {
@@ -375,6 +409,11 @@
 
     .task-panel {
         padding: .8em;
+    }
+
+    .countdown {
+        font-size: 2.5rem;
+        text-align: center;
     }
 
 </style>

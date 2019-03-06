@@ -17,7 +17,6 @@
 </template>
 
 <script>
-    import {CODE_USERNAME_NONEXISTENT, CODE_WRONG_PASSWORD} from "../mock/constant"
     import Gitee from "../model/gitee";
 
     export default {

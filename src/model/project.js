@@ -51,8 +51,18 @@ export default class Project {
     }
 
     updateTask(task) {
-        this.removeTask(task)
-        this.addTask(task)
+
+        const temp = this.tasksMap.get(task.name)
+        this.totalTime -= temp.totalTime
+        this.usedTime -= temp.usedTime
+        this.totalTime += task.totalTime
+        this.usedTime += task.usedTime
+
+        if (temp.state != COMPLETED && task.state == COMPLETED) {
+            this.total -= 1
+        }
+
+        this.tasksMap.set(task.name, task)
     }
 
     completeTask(name) {
