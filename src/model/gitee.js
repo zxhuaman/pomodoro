@@ -89,7 +89,7 @@ export default class Gitee {
     static deleteProject(project) {
         return Gitee.getTrees().then(trees => {
             const filter = trees.filter(tree => tree.path === (project.name + '.project'))
-            if (filter.length = 1) {
+            if (filter && filter.length == 1) {
                 return Axios.delete(`${base_url}/repos/mdbook/pomodoro/contents/${filter[0].path}`,
                     {
                         params: {
@@ -107,7 +107,7 @@ export default class Gitee {
     static addTask(task) {
         return Gitee.getTrees().then(trees => {
             const filterProjects = trees.filter(value => value.path === (task.project + '.project'));
-            if (filterProjects.length == 1) {
+            if (filterProjects && filterProjects.length == 1) {
                 const tree = filterProjects[0]
                 return Gitee.getProject(tree).then(project => {
                     project.sha = tree.sha

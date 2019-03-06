@@ -7,7 +7,6 @@ import VueRouter from "vue-router";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import {data} from "./data";
-import Countdown from "./components/Countdown";
 import Gitee from "./model/gitee";
 
 Vue.config.productionTip = false
@@ -20,7 +19,6 @@ const router = new VueRouter({
         {path: '/pomodoro/home', component: Home},
         {path: '/pomodoro/login', component: Login},
         {path: '/pomodoro/dashboard', component: Dashboard},
-        {path: '/pomodoro/countdown', component: Countdown},
     ]
 })
 

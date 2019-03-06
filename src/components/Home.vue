@@ -177,6 +177,9 @@
             Gitee.getProjects().then(projects => {
                 this.projects = projects
                 projects.forEach(project => this.projectMap.set(project.name, project))
+                if (this.projects && this.projects.length > 0) {
+                    this.$refs.projectTable.setCurrentRow(this.projects[0]);
+                }
             })
         },
         computed: {
@@ -200,10 +203,11 @@
                 })
             },
             deleteProject(project) {
-                Gitee.deleteProject(project).then(() => {
-                    this.projectMap.delete(project.name)
-                    this.projects = Array.from(this.projectMap.values())
-                }).catch(err => console.log(err))
+                Gitee.deleteProject(project)
+                    .then(() => {
+                        this.projectMap.delete(project.name)
+                        this.projects = Array.from(this.projectMap.values())
+                    })
             },
             addTask(name, tomato) {
                 const task = new Task(name, new Date().getTime(), tomato * 25, 0, this.curProject.name)
@@ -223,10 +227,11 @@
                 })
             },
             removeTask(task) {
-                Gitee.removeTask(task).then(() => {
-                    this.projectMap.get(task.project).removeTask(task)
-                    this.projects = Array.from(this.projectMap.values())
-                }).catch(err => console.log(err))
+                Gitee.removeTask(task)
+                    .then(() => {
+                        this.projectMap.get(task.project).removeTask(task)
+                        this.projects = Array.from(this.projectMap.values())
+                    })
             },
             updateTaskState(task, state) {
                 this.projects.forEach(project => {
@@ -278,7 +283,7 @@
             projectMouseEnter(val) {
                 this.hoverProject = val
             },
-            projectMouseLeave(val) {
+            projectMouseLeave() {
                 this.hoverProject = null
             }
         },
