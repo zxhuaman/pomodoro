@@ -40,7 +40,8 @@ export default class Gitee {
             return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
                 {
                     'access_token': this.token,
-                    'content': Base64.encode(JSON.stringify(project, ['name', 'createTime', 'tasks'])),
+                    'content': Base64.encode(JSON.stringify(project,
+                        ['name', 'createTime', 'tasks', 'totalTime', 'usedTime', 'project', 'state'])),
                     'sha': project.sha,
                     'message': `update ${project.name}`
                 })
@@ -85,15 +86,17 @@ export default class Gitee {
         return new Promise((resolve, reject) => reject())
     }
 
-    static removeProject(project) {
+    static deleteProject(project) {
         return Gitee.getTrees().then(trees => {
             const filter = trees.filter(tree => tree.path === (project.name + '.project'))
             if (filter.length = 1) {
-                return Axios.delete(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
+                return Axios.delete(`${base_url}/repos/mdbook/pomodoro/contents/${filter[0].path}`,
                     {
-                        'access_token': this.token,
-                        'sha': filter[0].sha,
-                        'message': `delete ${project.name}`
+                        params: {
+                            'access_token': this.token,
+                            'sha': filter[0].sha,
+                            'message': `delete ${filter[0].path}`
+                        }
                     })
                     .then(() => true)
             }

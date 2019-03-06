@@ -1,8 +1,8 @@
 <template>
     <el-container>
         <el-aside>
-            <el-menu :default-active="curProject ? curProject.name : projects[0].name"
-                     v-if="projects.length>0">
+            <!--<el-menu class="projects" :default-active="curProject.name"
+                     v-if="curProject">
                 <el-menu-item v-for="(project, index) in projects"
                               :index="project.name"
                               @click="curIndex = index">
@@ -10,8 +10,34 @@
                     <span slot="title">
                         {{project.name}}
                         <el-badge class="mark" :value="project.pending" :hidden="project.pending===0"/>
+                    <i class="el-icon-delete"></i>
                     </span>
                 </el-menu-item>
+            </el-menu>-->
+            <el-table
+                    v-if="projects.length>0"
+                    ref="projectTable"
+                    :data="projects"
+                    height="80%"
+                    :show-header="false"
+                    highlight-current-row
+                    @cell-mouse-enter="projectMouseEnter"
+                    @cell-mouse-leave="projectMouseLeave"
+                    @current-change="handleCurrentChange">
+                <el-table-column width="200">
+                    <template slot-scope="scope">
+                        <i class="el-icon-menu"></i>
+                        <span style="margin-left: 10px">{{ scope.row.name}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column>
+                    <template slot-scope="scope">
+                        <i class="el-icon-delete" v-if="scope.row === hoverProject"
+                           @click="deleteProject(scope.row)"></i>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-menu class="create-project">
                 <el-menu-item @click="dialogVisible=true" :index="newProject.name">
                     <i class="el-icon-plus"></i>
                     <span slot="title">
@@ -138,7 +164,7 @@
                             fixed="right"
                             label="操作">
                         <template slot-scope="scope">
-                            <el-button v-if="scope.row.state === 'uncompleted'"
+                            <el-button v-if="scope.row.state !== 'completed'"
                                        @click="completeTask(scope.row)" size="mini"
                                        icon="el-icon-check" title="完成"
                                        circle>
@@ -161,7 +187,10 @@
     export default {
         name: "Home",
         beforeMount: function () {
-            Gitee.getProjects().then(projects => this.projects = projects)
+            Gitee.getProjects().then(projects => {
+                this.projects = projects
+                projects.forEach(project => this.projectMap.set(project.name, project))
+            })
         },
         computed: {
             username() {
@@ -181,9 +210,16 @@
                 this.dialogVisible = false
                 const project = new Project(name, new Date().getTime())
                 Gitee.addProject(project).then(project => {
-                    this.projects.push(project)
+                    this.projectMap.set(project.name, project)
+                    this.projects = Array.from(this.projectMap.values())
                     setTimeout(() => this.curIndex = this.projects.length - 1, 100)
                 })
+            },
+            deleteProject(project) {
+                Gitee.deleteProject(project).then(() => {
+                    this.projectMap.delete(project.name)
+                    this.projects = Array.from(this.projectMap.values())
+                }).catch(err => console.log(err))
             },
             addTask(name, tomato) {
                 const task = new Task(name, new Date().getTime(), tomato * 25, 0, this.curProject.name)
@@ -196,12 +232,14 @@
                 })
             },
             updateTaskState(task, state) {
+                console.log(task, state)
                 this.projects.forEach(project => {
                     if (project.name === task.project) {
                         task.state = state
                         project.updateTask(task)
                     }
                 })
+
             },
             submitForm(ref) {
                 if (this.addProjectForm.ref === ref) {
@@ -232,16 +270,27 @@
                     this.addTaskForm.tomato = 1
                 }
             },
-            completeTask(taskName) {
-                this.$root.$data.completeTask(taskName)
+            completeTask(task) {
+                this.projectMap.get(task.project).completeTask(task)
+                this.projects = Array.from(this.projectMap.values())
             },
             removeTask(task) {
-                this.$root.$data.removeTask(task)
+                this.projectMap.get(task.project).removeTask(task)
+                this.projects = Array.from(this.projectMap.values())
             },
             getDateString(time) {
                 const date = new Date()
                 date.setTime(time)
                 return date.toLocaleDateString()
+            },
+            handleCurrentChange(val) {
+                this.currentRow = val;
+            },
+            projectMouseEnter(val) {
+                this.hoverProject = val
+            },
+            projectMouseLeave(val) {
+                this.hoverProject = null
             }
         },
         data: function () {
@@ -284,7 +333,10 @@
                     ]
                 },
                 curIndex: 0,
-                projects: []
+                projects: [],
+                projectMap: new Map(),
+                currentRow: 0,
+                hoverProject: null
             }
         }
     }
@@ -298,8 +350,12 @@
         height: 100%;
     }
 
-    .el-menu {
-        height: 100%;
+    .projects {
+        height: 80%;
+    }
+
+    .delete-project {
+        display: none;
     }
 
     .mark {
