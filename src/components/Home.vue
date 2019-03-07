@@ -39,7 +39,7 @@
                     <el-col :span="6">
                         <div class="grid-content">
                             <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                                {{(curProject.totalTime/60).toFixed(1)}}</p>
+                                {{(curProject.totalTime/3600).toFixed(1)}}</p>
                             <p style="font-size: .7em;margin: 0">预计用时(h)</p>
                         </div>
                     </el-col>
@@ -53,7 +53,7 @@
                     <el-col :span="6">
                         <div class="grid-content">
                             <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                                {{(curProject.usedTime/60).toFixed(1)}}</p>
+                                {{(curProject.usedTime/3600).toFixed(1)}}</p>
                             <p style="font-size: .7em;margin: 0">已用时间(h)</p>
                         </div>
                     </el-col>
@@ -98,9 +98,14 @@
                                 align="center"
                                 label="">
                             <template slot-scope="scope">
-                                <i v-if="scope.row.state!=='processing'" class="el-icon-caret-right"
+                                <i v-if="scope.row.state==='uncompleted'" class="el-icon-caret-right"
+                                   title="开始"
                                    @click="updateTaskState(scope.row, 'processing')"></i>
-                                <i v-else class="el-icon-time" @click="updateTaskState(scope.row, 'uncompleted')"></i>
+                                <i v-else-if="scope.row.state==='processing'"
+                                   class="el-icon-time"
+                                   title="停止"
+                                   @click="updateTaskState(scope.row, 'uncompleted')"></i>
+                                <i v-else class="el-icon-success" title="已完成"></i>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -123,8 +128,8 @@
                             <template slot-scope="scope">
                                 <el-rate
                                         slot="append"
-                                        :max="scope.row.totalTime/25"
-                                        :value="scope.row.totalTime/25"
+                                        :max="scope.row.totalTime/60/25"
+                                        :value="scope.row.totalTime/60/25"
                                         :icon-classes="['el-icon-tomato', 'el-icon-tomato', 'el-icon-tomato']"
                                         void-icon-class="el-icon-tomato">
                                 </el-rate>
@@ -137,11 +142,12 @@
                             <template slot-scope="scope">
                                 <el-button v-if="scope.row.state !== 'completed'"
                                            @click="completeTask(scope.row)" size="mini"
-                                           icon="el-icon-check" title="完成"
-                                           circle>
+                                           type="primary"
+                                           >
+                                    完成
                                 </el-button>
                                 <el-button @click="removeTask(scope.row)"
-                                           size="mini" icon="el-icon-delete" title="删除" circle></el-button>
+                                           size="mini" type="danger">删除</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -150,7 +156,7 @@
             <el-footer style="height: 60px;text-align: center">
                 <div class="countdown" v-if="showCountdown">
                     <el-button type="danger" icon="el-icon-time" round>
-                        {{parseInt(countdownTime/60)+':'+countdownTime%60}}
+                        {{formattedTime}}
                     </el-button>
                 </div>
             </el-footer>
@@ -195,6 +201,11 @@
         computed: {
             username() {
                 return this.$route.params.username
+            },
+            formattedTime() {
+                const minutes = parseInt(this.countdownTime / 60)
+                const seconds = this.countdownTime % 60
+                return minutes + ':' + (Array(2).join('0') + seconds).slice(-2)
             }
         },
         methods: {
@@ -215,20 +226,27 @@
                     })
             },
             addTask(name, tomato) {
-                const task = new Task(name, new Date().getTime(), tomato * 25, 0, this.curProject.name)
+                const task = new Task(name, new Date().getTime(), tomato * 25 * 60, 0, this.curProject.name)
                 Gitee.addTask(task).then(value => {
-                    this.projects.forEach((project, index) => {
-                        if (project.name === value.project) {
-                            this.projects[index].addTask(value)
-                        }
-                    })
+                    this.projectMap.get(task.project).addTask(value)
+                    this.projects = Array.from(this.projectMap.values())
                 })
             },
             completeTask(task) {
-                task.state = COMPLETED
+                if (this.curTask) {
+                    this.stopCountdown(this.curTask)
+                }
+                task.state = COMPLETED;
+                task.usedTime = task.totalTime
                 Gitee.updateTask(task).then(() => {
-                    this.projectMap.get(task.project).completeTask(task)
-                    this.projects = Array.from(this.projectMap.values())
+                    const project = this.projectMap.get(task.project)
+                    project.completeTask(task.name)
+                    Gitee.updateProject1(project)
+                        .then(project => {
+                            this.curProject = project
+                            this.projectMap.set(project.name, project)
+                            this.projects = Array.from(this.projectMap.values())
+                        })
                 })
             },
             removeTask(task) {
@@ -258,8 +276,6 @@
                 })
                 if (state === PROCESSING) {
                     this.countdown(task)
-                } else {
-                    this.stopCountdown(this.curProject)
                 }
             },
             submitForm(ref) {
@@ -308,12 +324,12 @@
             },
             countdown(task) {
                 this.showCountdown = true
-                this.countdownTime = (task.totalTime - task.usedTime) * 60
-                setInterval(this.decrement, 1000)
+                this.countdownTime = task.totalTime - task.usedTime
+                this.countdownId = setInterval(this.decrement, 1000)
             },
             stopCountdown(task) {
                 this.showCountdown = false
-                clearInterval()
+                clearInterval(this.countdownId)
                 Gitee.updateTask(task).then(task => this.projectMap.get(task.project).updateTask(task))
                 this.projects = Array.from(this.projectMap.values())
             },
@@ -321,6 +337,7 @@
                 if (this.countdownTime == 0) {
                     this.stopCountdown(this.curTask)
                 } else {
+                    this.curTask.usedTime += 1
                     this.countdownTime -= 1
                 }
             }
@@ -372,7 +389,8 @@
                 curProject: null,
                 curTask: null,
                 showCountdown: false,
-                countdownTime: 0
+                countdownTime: 0,
+                countdownId: undefined
             }
         }
     }

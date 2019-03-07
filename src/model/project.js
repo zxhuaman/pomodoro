@@ -51,7 +51,6 @@ export default class Project {
     }
 
     updateTask(task) {
-
         const temp = this.tasksMap.get(task.name)
         this.totalTime -= temp.totalTime
         this.usedTime -= temp.usedTime
@@ -67,7 +66,7 @@ export default class Project {
 
     completeTask(name) {
         const task = this.tasksMap.get(name);
-        if (task != null) {
+        if (task !== null && task.state !== COMPLETED) {
             task.usedTime = task.totalTime;
             task.state = COMPLETED;
             this.pending -= 1;

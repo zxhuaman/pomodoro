@@ -50,6 +50,25 @@ export default class Gitee {
         return new Promise((resolve, reject) => reject())
     }
 
+    static updateProject1(project) {
+        return Gitee.getTrees().then(trees => {
+            const filterProjects = trees.filter(value => value.path === (project.name + '.project'));
+            if (filterProjects && filterProjects.length == 1) {
+                const tree = filterProjects[0]
+                return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
+                    {
+                        'access_token': this.token,
+                        'content': Base64.encode(JSON.stringify(project,
+                            ['name', 'createTime', 'tasks', 'totalTime', 'usedTime', 'project', 'state'])),
+                        'sha': tree.sha,
+                        'message': `update ${tree.path}`
+                    })
+                    .then(() => project)
+            }
+            throw new Error()
+        })
+    }
+
     static getTrees() {
         if (this.token) {
             return Axios
