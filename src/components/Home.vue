@@ -142,12 +142,12 @@
                             <template slot-scope="scope">
                                 <el-button v-if="scope.row.state !== 'completed'"
                                            @click="completeTask(scope.row)" size="mini"
-                                           type="primary"
+                                           type="text"
                                            >
                                     完成
                                 </el-button>
                                 <el-button @click="removeTask(scope.row)"
-                                           size="mini" type="danger">删除</el-button>
+                                           size="mini" type="text">删除</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
