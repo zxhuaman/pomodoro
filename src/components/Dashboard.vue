@@ -1,26 +1,43 @@
 <template>
-    <el-row style="width: 100%;margin: 0;" :gutter="20">
-        <el-col :span="6" style="margin: 0">
-            <el-card>
-                <div ref="overview" style="width: 200px;height: 100px"></div>
-            </el-card>
-        </el-col>
-        <el-col :span="6" style="margin: 0">
-            <el-card>
-                <div ref="nearlyAYear" style="width: 200px;height: 100px"></div>
-            </el-card>
-        </el-col>
-        <el-col :span="6" style="margin: 0">
-            <el-card>
-                <div ref="nearlyThreeMonths" style="width: 200px;height: 100px"></div>
-            </el-card>
-        </el-col>
-        <el-col :span="6" style="margin: 0">
-            <el-card>
-                <div ref="nearlyAWeek" style="width: 200px;height: 100px"></div>
-            </el-card>
-        </el-col>
-    </el-row>
+    <div>
+        <el-row style="width: 100%;margin: 0;" :gutter="10">
+            <el-col :span="6" style="margin: 0">
+                <el-card>
+                    <div ref="overview" style="width: 220px;height: 90px"></div>
+                </el-card>
+            </el-col>
+            <el-col :span="6" style="margin: 0">
+                <el-card>
+                    <div ref="nearlyAYear" style="width: 220px;height: 90px"></div>
+                </el-card>
+            </el-col>
+            <el-col :span="6" style="margin: 0">
+                <el-card>
+                    <div ref="nearlyThreeMonths" style="width: 220px;height: 90px"></div>
+                </el-card>
+            </el-col>
+            <el-col :span="6" style="margin: 0">
+                <el-card>
+                    <div ref="nearlyAWeek" style="width: 220px;height: 90px"></div>
+                </el-card>
+            </el-col>
+        </el-row>
+        <div style="text-align: left;margin: 0;padding: 0">
+            <el-button type="text">今天</el-button>
+            <el-button type="text">本周</el-button>
+            <el-button type="text">本月</el-button>
+            <el-button type="text">全年</el-button>
+            <el-date-picker
+                    style="margin-left: 10px"
+                    v-model="value6"
+                    type="daterange"
+                    range-separator="至"
+                    start-placeholder="开始日期"
+                    end-placeholder="结束日期">
+            </el-date-picker>
+        </div>
+
+    </div>
 </template>
 
 <script>
@@ -91,16 +108,6 @@
     div {
         text-align: center;
         margin: 1em auto;
-    }
-
-    #chart {
-        margin: 3em auto 0 auto;
-        text-align: center;
-    }
-
-    #overview {
-        width: 150px;
-        height: 150px;
     }
 
 </style>
