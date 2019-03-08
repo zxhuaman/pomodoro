@@ -22,12 +22,13 @@
                 </el-card>
             </el-col>
         </el-row>
-        <div style="text-align: left;margin: 0;padding: 0">
-            <el-button type="text">今天</el-button>
-            <el-button type="text">本周</el-button>
-            <el-button type="text">本月</el-button>
-            <el-button type="text">全年</el-button>
+        <div style="text-align: left;margin: 0;padding-left: 10px">
+            <el-button type="text" size="mini">今天</el-button>
+            <el-button type="text" size="mini">本周</el-button>
+            <el-button type="text" size="mini">本月</el-button>
+            <el-button type="text" size="mini">全年</el-button>
             <el-date-picker
+                    size="mini"
                     style="margin-left: 10px"
                     v-model="value6"
                     type="daterange"
