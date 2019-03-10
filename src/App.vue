@@ -1,9 +1,9 @@
 <template>
     <el-container id="app">
         <el-header>
-            <router-link to="home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
-            <router-link to="home" class="site-title">pomodoro</router-link>
-            <router-link to="login" class="sign-in">
+            <router-link to="/pomodoro/home" class="logo"><img src="./assets/logo.png" alt="logo"></router-link>
+            <router-link to="/pomodoro/home" class="site-title">pomodoro</router-link>
+            <router-link to="/pomodoro/login" class="sign-in">
                 <img src="./assets/login.png" alt="登陆" title="登陆">
             </router-link>
             <router-link to="dashboard" class="dashboard">
@@ -19,10 +19,9 @@
 </template>
 
 <script>
+
     export default {
-        name: 'app',
-        methods:{
-        }
+        name: 'app'
     }
 </script>
 

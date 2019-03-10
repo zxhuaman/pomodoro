@@ -143,11 +143,12 @@
                                 <el-button v-if="scope.row.state !== 'completed'"
                                            @click="completeTask(scope.row)" size="mini"
                                            type="text"
-                                           >
+                                >
                                     完成
                                 </el-button>
                                 <el-button @click="removeTask(scope.row)"
-                                           size="mini" type="text">删除</el-button>
+                                           size="mini" type="text">删除
+                                </el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -184,21 +185,14 @@
 
 <script>
     import Project from '../model/project'
-    import Gitee from "../model/gitee"
     import {COMPLETED, PROCESSING, Task, UNCOMPLETED} from "../model/task";
 
     export default {
         name: "Home",
-        beforeMount: function () {
-            Gitee.getProjects().then(projects => {
-                this.projects = projects
-                projects.forEach(project => this.projectMap.set(project.name, project))
-                if (this.projects && this.projects.length > 0) {
-                    this.$refs.projectTable.setCurrentRow(this.projects[0]);
-                }
-            })
-        },
         computed: {
+            projectMap: function () {
+                return this.$root.$store.state.projectMap
+            },
             username() {
                 return this.$route.params.username
             },
@@ -208,29 +202,30 @@
                 return minutes + ':' + (Array(2).join('0') + seconds).slice(-2)
             }
         },
+        watch: {
+            projectMap: function () {
+                this.projects = Array.from(this.projectMap.values())
+                if (this.curProject) {
+                    this.curProject = this.projectMap.get(this.curProject.name);
+                } else {
+                    this.curProject = this.projects[0]
+                }
+                this.$refs.projectTable.setCurrentRow(this.curProject);
+            }
+        },
         methods: {
             addProject(name) {
                 this.dialogVisible = false
                 const project = new Project(name, new Date().getTime())
-                Gitee.addProject(project).then(project => {
-                    this.projectMap.set(project.name, project)
-                    this.projects = Array.from(this.projectMap.values())
-                    setTimeout(() => this.curIndex = this.projects.length - 1, 100)
-                })
+                this.$root.$store.dispatch('addProject', project)
+                this.curProject = project
             },
             deleteProject(project) {
-                Gitee.deleteProject(project)
-                    .then(() => {
-                        this.projectMap.delete(project.name)
-                        this.projects = Array.from(this.projectMap.values())
-                    })
+                this.$root.$store.dispatch('deleteProject', project)
             },
             addTask(name, tomato) {
                 const task = new Task(name, new Date().getTime(), tomato * 25 * 60, 0, this.curProject.name)
-                Gitee.addTask(task).then(value => {
-                    this.projectMap.get(task.project).addTask(value)
-                    this.projects = Array.from(this.projectMap.values())
-                })
+                this.$root.$store.dispatch('addTask', task)
             },
             completeTask(task) {
                 if (this.curTask) {
@@ -238,23 +233,10 @@
                 }
                 task.state = COMPLETED;
                 task.usedTime = task.totalTime
-                Gitee.updateTask(task).then(() => {
-                    const project = this.projectMap.get(task.project)
-                    project.completeTask(task.name)
-                    Gitee.updateProject1(project)
-                        .then(project => {
-                            this.curProject = project
-                            this.projectMap.set(project.name, project)
-                            this.projects = Array.from(this.projectMap.values())
-                        })
-                })
+                this.$root.$store.dispatch('updateTask', task)
             },
             removeTask(task) {
-                Gitee.removeTask(task)
-                    .then(() => {
-                        this.projectMap.get(task.project).removeTask(task)
-                        this.projects = Array.from(this.projectMap.values())
-                    })
+                this.$root.$store.dispatch('removeTask', task)
             },
             updateTaskState(task, state) {
                 if (this.curTask) {
@@ -330,7 +312,7 @@
             stopCountdown(task) {
                 this.showCountdown = false
                 clearInterval(this.countdownId)
-                Gitee.updateTask(task).then(task => this.projectMap.get(task.project).updateTask(task))
+                this.$root.$store.dispatch('updateTask', task)
                 this.projects = Array.from(this.projectMap.values())
             },
             decrement() {
@@ -344,7 +326,7 @@
         },
         data: function () {
             let checkProject = (rule, value, callback) => {
-                if (this.$root.$data.state.projects.filter(v => v.name === value).length > 0) {
+                if (this.projectMap.has(value)) {
                     return callback(new Error('项目已存在'))
                 }
                 callback()
@@ -381,11 +363,9 @@
                         {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'focus'}
                     ]
                 },
-                curIndex: 0,
-                projects: [],
-                projectMap: new Map(),
                 currentRow: 0,
                 hoverProject: null,
+                projects: null,
                 curProject: null,
                 curTask: null,
                 showCountdown: false,

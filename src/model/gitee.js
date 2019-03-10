@@ -2,189 +2,189 @@ import Axios from 'axios'
 import {Base64} from 'js-base64'
 import Project from "./project";
 
-const base_url = 'https://Gitee.com/api/v5'
+const base_url = 'https://Gitee.com/api/v5';
 
 export default class Gitee {
-    static token;
+    static debug = true;
+    static info;
 
     static login(username, password) {
+        if (this.debug) {
+            console.log('login', username, password)
+        }
         return new Promise((resolve, reject) => {
             if (username === 'xiaogege' && password === '123456') {
                 resolve('30766817b6d14cbc125ec605077d1687')
             } else {
                 reject()
             }
-        })
+        });
     }
 
-    static setToken(token) {
-        this.token = token;
+    static setInfo(info) {
+        this.info = info
     }
 
-    static addProject(project) {
-        if (this.token) {
-            return Axios.post(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
-                {
-                    'access_token': this.token,
-                    'content': Base64.encode(JSON.stringify(project, ['name', 'createTime', 'tasks'])),
-                    'message': `add project ${project.name}`
-                },
+    static encodeTreeContent(tree) {
+        if (this.debug) {
+            console.log('encodeTreeContent', tree)
+        }
+        const projects = tree.map ? Array.from(tree.map.values()) : [];
+        const content = Base64.encode(JSON.stringify({projects: projects},
+            ['projects', 'name', 'createTime', 'tasks', 'totalTime', 'usedTime', 'project', 'state']))
+        return content
+    }
+
+    static createProjectTree(tree = {path: this.info.username + '.json'}) {
+        if (this.debug) {
+            console.log('createProjectTree', tree)
+        }
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return Axios.post(`${base_url}/repos/mdbook/pomodoro/contents/${tree.path}`,
+            {
+                'access_token': this.info.token,
+                'content': this.encodeTreeContent(tree),
+                'message': `add project ${tree.path}`
+            },
+            {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
+    }
+
+    static getProjectTree(tree = {path: this.info.username + '.json'}) {
+        if (this.debug) {
+            console.log('getProjectTree', tree)
+        }
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject());
+        }
+        return Axios
+            .get(`${base_url}/repos/mdbook/pomodoro/git/gitee/trees/master?access_token=${this.info.token}`,
                 {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
-                .then(() => project)
-        }
-        return new Promise((resolve, reject) => reject());
-    }
-
-    static updateProject(project) {
-        if (this.token) {
-            return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
-                {
-                    'access_token': this.token,
-                    'content': Base64.encode(JSON.stringify(project,
-                        ['name', 'createTime', 'tasks', 'totalTime', 'usedTime', 'project', 'state'])),
-                    'sha': project.sha,
-                    'message': `update ${project.name}`
+            .then(res => {
+                return res.data.tree.filter(value => value.path === tree.path).pop()
+            })
+            .then(res => Axios.get(
+                `${base_url}/repos/mdbook/pomodoro/git/blobs/${res.sha}?access_token=${this.info.token}`,
+                {headers: {'Content-Type': 'application/json;charset=UTF-8'}}))
+            .then(res => {
+                tree.sha = res.data.sha
+                return JSON.parse(Base64.decode(res.data.content))
+            })
+            .then(content => {
+                console.log(content)
+                const map = new Map()
+                content.projects.forEach(project => {
+                    if (project && project.name) {
+                        map.set(project.name, new Project(project.name, project.createTime, project.tasks));
+                    }
                 })
-                .then(() => project)
-        }
-        return new Promise((resolve, reject) => reject())
+                tree.map = map
+                return tree
+            });
     }
 
-    static updateProject1(project) {
-        return Gitee.getTrees().then(trees => {
-            const filterProjects = trees.filter(value => value.path === (project.name + '.project'));
-            if (filterProjects && filterProjects.length == 1) {
-                const tree = filterProjects[0]
-                return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${project.name + '.project'}`,
-                    {
-                        'access_token': this.token,
-                        'content': Base64.encode(JSON.stringify(project,
-                            ['name', 'createTime', 'tasks', 'totalTime', 'usedTime', 'project', 'state'])),
-                        'sha': tree.sha,
-                        'message': `update ${tree.path}`
-                    })
-                    .then(() => project)
-            }
-            throw new Error()
-        })
-    }
-
-    static getTrees() {
-        if (this.token) {
-            return Axios
-                .get(`${base_url}/repos/mdbook/pomodoro/git/gitee/trees/master?access_token=${this.token}`,
-                    {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
-                .then(res => {
-                    const trees = res.data.tree.filter(value => value.path.endsWith('.project'))
-                    return trees
-                })
+    static updateProjectTree(tree) {
+        if (this.debug) {
+            console.log('updateProjectTree', tree)
         }
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return Axios.put(`${base_url}/repos/mdbook/pomodoro/contents/${tree.path}`,
+            {
+                'access_token': this.info.token,
+                'content': this.encodeTreeContent(tree),
+                'sha': tree.sha,
+                'message': `update ${tree.path}`
+            },
+            {headers: {'Content-Type': 'application/json;charset=UTF-8'}}
+        )
     }
 
     static getProjects() {
-        if (this.token) {
-            return Gitee.getTrees().then(function (trees) {
-                const promises = []
-                trees.forEach(value => promises.push(Gitee.getProject(value)))
-                return Promise.all(promises)
+        if (this.debug) {
+            console.log('getProjects')
+        }
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree().then(tree => Array.from(tree.map.values()))
+    }
+
+    static addProject(project) {
+        if (this.debug) {
+            console.log('addProject', project)
+        }
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree()
+            .then(tree => {
+                tree.map.set(project.name, project)
+                console.log(tree.map, project.name)
+                return this.updateProjectTree(tree)
             })
-        }
-        return new Promise((resolve, reject) => reject)
     }
 
-    static getProject(project) {
-        if (this.token) {
-            return Axios
-                .get(`${base_url}/repos/mdbook/pomodoro/git/blobs/${project.sha}?access_token=${this.token}`,
-                    {headers: {'Content-Type': 'application/json;charset=UTF-8'}})
-                .then(res => {
-                    const result = JSON.parse(Base64.decode(res.data.content))
-                    return new Project(result.name, result.createTime, result.tasks)
-                })
+    static removeProject(project) {
+        if (this.debug) {
+            console.log('removeProject', project)
         }
-        return new Promise((resolve, reject) => reject())
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree()
+            .then(tree => {
+                tree.map.delete(project.name);
+                return this.updateProjectTree(tree)
+            })
     }
 
-    static deleteProject(project) {
-        return Gitee.getTrees().then(trees => {
-            const filter = trees.filter(tree => tree.path === (project.name + '.project'))
-            if (filter && filter.length == 1) {
-                return Axios.delete(`${base_url}/repos/mdbook/pomodoro/contents/${filter[0].path}`,
-                    {
-                        params: {
-                            'access_token': this.token,
-                            'sha': filter[0].sha,
-                            'message': `delete ${filter[0].path}`
-                        }
-                    })
-                    .then(() => true)
-            }
-            throw new Error()
-        })
+    static updasteProject(project) {
+        if (this.debug) {
+            console.log('updasteProject', project)
+        }
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree()
+            .then(tree => {
+                tree.map.set(project.name, project);
+                return this.updateProjectTree(tree)
+            })
     }
 
     static addTask(task) {
-        return Gitee.getTrees().then(trees => {
-            const filterProjects = trees.filter(value => value.path === (task.project + '.project'));
-            if (filterProjects && filterProjects.length == 1) {
-                const tree = filterProjects[0]
-                return Gitee.getProject(tree).then(project => {
-                    project.sha = tree.sha
-                    project.addTask(task)
-                    return Gitee.updateProject(project).then(() => task)
-                })
-            }
-            throw new Error()
-        })
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree()
+            .then(tree => {
+                tree.map.get(task.project).addTask(task)
+                return this.updateProjectTree(tree)
+            })
     }
 
     static removeTask(task) {
-        return Gitee.getTrees().then(trees => {
-            const filterProjects = trees.filter(value => value.path === (task.project + '.project'));
-            if (filterProjects.length == 1) {
-                const tree = filterProjects[0]
-                return Gitee.getProject(tree).then(project => {
-                    project.sha = tree.sha
-                    let i = -1;
-                    project.tasks.forEach(((value, index) => {
-                        if (value.name === task.name) {
-                            i = index;
-                        }
-                    }))
-                    if (i > -1) {
-                        project.tasks.splice(i, 1);
-                        return Gitee.updateProject(project).then(() => task);
-                    } else {
-                        throw new Error()
-                    }
-                })
-            }
-            throw new Error()
-        })
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree()
+            .then(tree => {
+                tree.map.get(task.project).removeTask(task)
+                return this.updateProjectTree(tree)
+            })
     }
 
     static updateTask(task) {
-        return Gitee.getTrees().then(trees => {
-            const filterProjects = trees.filter(value => value.path === (task.project + '.project'));
-            if (filterProjects.length == 1) {
-                const tree = filterProjects[0]
-                return Gitee.getProject(tree).then(project => {
-                    project.sha = tree.sha
-                    let i = -1;
-                    project.tasks.forEach(((value, index) => {
-                        if (value.name === task.name) {
-                            i = index;
-                        }
-                    }))
-                    if (i > -1) {
-                        project.tasks[i] = task
-                        return Gitee.updateProject(project).then(() => task);
-                    } else {
-                        throw new Error()
-                    }
-                })
-            }
-            throw new Error()
-        })
+        if (!this.info) {
+            return new Promise((resolve, reject) => reject())
+        }
+        return this.getProjectTree()
+            .then(tree => {
+                tree.map.get(task.project).updateTask(task)
+                return this.updateProjectTree(tree)
+            })
     }
 }

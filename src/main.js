@@ -6,8 +6,7 @@ import Home from "./components/Home";
 import VueRouter from "vue-router";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
-import {data} from "./data";
-import Gitee from "./model/gitee";
+import {store} from "./store";
 
 Vue.config.productionTip = false
 Vue.use(VueRouter)
@@ -16,6 +15,7 @@ const router = new VueRouter({
     mode: 'history',
     base: __dirname,
     routes: [
+        {path: '/pomodoro', component: Home},
         {path: '/pomodoro/home', component: Home},
         {path: '/pomodoro/login', component: Login},
         {path: '/pomodoro/dashboard', component: Dashboard},
@@ -23,7 +23,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-    if (to.path !== '/pomodoro/login' && !Gitee.token) {
+    if (to.path !== '/pomodoro/login' && !store.state.loggedIn) {
         next('/pomodoro/login');
     } else {
         next(true);
@@ -32,7 +32,20 @@ router.beforeEach((to, from, next) => {
 
 new Vue({
     el: '#app',
+    store,
     router,
-    data: data,
     render: h => h(App),
+    computed: {
+        loggedIn: function () {
+            return this.$store.state.loggedIn
+        }
+    },
+    watch: {
+        loggedIn: function () {
+            if (this.loggedIn) {
+                this.$router.push('/pomodoro/home',
+                    () => this.$store.dispatch('getProjectMap'));
+            }
+        }
+    }
 }).$mount('#app')

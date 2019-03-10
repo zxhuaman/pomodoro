@@ -17,19 +17,24 @@
 </template>
 
 <script>
-    import Gitee from "../model/gitee";
 
     export default {
         name: "Login",
+        mounted:function(){
+          this.$root.$store.commit('setInfo', null)
+        },
         methods: {
             onSubmit(ref) {
                 this.$refs[ref].validate((valid) => {
                     if (!valid) {
                         return false
                     }
-                    Gitee.login(this.loginForm.username, this.loginForm.password)
+                    this.$root.$store.dispatch('login', {
+                        username: this.loginForm.username,
+                        password: this.loginForm.password
+                    })
+                    /*Gitee.login(this.loginForm.username, this.loginForm.password)
                         .then(token => {
-                            console.log(token)
                             Gitee.setToken(token)
                             this.$router.push('/pomodoro/home')
                         })
@@ -38,7 +43,7 @@
                             type: 'error',
                             center: true,
                             duration: 1000
-                        }))
+                        }))*/
                     return true
                     /*this.$root.$data.login(this.loginForm.username, this.loginForm.password)
                         .then(code => {
