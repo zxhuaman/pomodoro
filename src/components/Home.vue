@@ -34,40 +34,8 @@
             </el-menu>
         </el-aside>
         <el-container>
-            <el-header>
-                <el-row class="project-detail" v-if="curProject">
-                    <el-col :span="6">
-                        <div class="grid-content">
-                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                                {{(curProject.totalTime/3600).toFixed(1)}}</p>
-                            <p style="font-size: .7em;margin: 0">预计用时(h)</p>
-                        </div>
-                    </el-col>
-                    <el-col :span="6">
-                        <div class="grid-content">
-                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                                {{curProject.pending}}</p>
-                            <p style="font-size: .7em;margin: 0">待完成任务</p>
-                        </div>
-                    </el-col>
-                    <el-col :span="6">
-                        <div class="grid-content">
-                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                                {{(curProject.usedTime/3600).toFixed(1)}}</p>
-                            <p style="font-size: .7em;margin: 0">已用时间(h)</p>
-                        </div>
-                    </el-col>
-                    <el-col :span="6">
-                        <div class="grid-content">
-                            <p style="font-size: 2.2em;margin: 0;color:#f56c6c;">
-                                {{curProject.total-curProject.pending}}</p>
-                            <p style="font-size: .7em;margin: 0">已完成任务</p>
-                        </div>
-                    </el-col>
-                </el-row>
-            </el-header>
             <el-main>
-                <div class="task-panel" style="height: 100%">
+                <el-card class="task-panel">
                     <el-form :model="addTaskForm"
                              :rules="addTaskRules"
                              :ref="addTaskForm.ref"
@@ -87,27 +55,16 @@
                         </el-form-item>
                     </el-form>
                     <el-table
+                            ref="taskTable"
                             v-if="curProject && curProject.tasks.length > 0"
                             size="mini"
-                            height="85%"
+                            height="100%"
                             row-dbclick=""
                             :show-header="false"
+                            highlight-current-row
+                            @current-change="handleTaskChange"
                             :data="curProject.tasks">
-                        <el-table-column
-                                prop="state"
-                                align="center"
-                                label="">
-                            <template slot-scope="scope">
-                                <i v-if="scope.row.state==='uncompleted'" class="el-icon-caret-right"
-                                   title="开始"
-                                   @click="updateTaskState(scope.row, 'processing')"></i>
-                                <i v-else-if="scope.row.state==='processing'"
-                                   class="el-icon-time"
-                                   title="停止"
-                                   @click="updateTaskState(scope.row, 'uncompleted')"></i>
-                                <i v-else class="el-icon-success" title="已完成"></i>
-                            </template>
-                        </el-table-column>
+
                         <el-table-column
                                 prop="createTime"
                                 align="center"
@@ -152,15 +109,20 @@
                             </template>
                         </el-table-column>
                     </el-table>
-                </div>
+                </el-card>
+                <el-card class="current-task">
+                    <div slot="header" class="task-title">
+                        <span>{{curTask?curTask.name:''}}</span>
+                    </div>
+                    <div v-if="curTask">
+                        <span>总时间{{(curTask.totalTime/3600).toFixed(1)}}小时</span>
+                        <span class="countdown">{{formatTime(remainingTime)}}</span>
+                        <el-button class="task-operation" type="primary" v-if="curTask.state !== 'complete'" round>
+                            {{curTask.state === 'uncompleted' ? '开始':'暂停'}}
+                        </el-button>
+                    </div>
+                </el-card>
             </el-main>
-            <el-footer style="height: 60px;text-align: center">
-                <div class="countdown" v-if="showCountdown">
-                    <el-button type="danger" icon="el-icon-time" round>
-                        {{formattedTime}}
-                    </el-button>
-                </div>
-            </el-footer>
         </el-container>
         <el-dialog
                 title="新建项目"
@@ -195,22 +157,24 @@
             },
             username() {
                 return this.$route.params.username
-            },
-            formattedTime() {
-                const minutes = parseInt(this.countdownTime / 60)
-                const seconds = this.countdownTime % 60
-                return minutes + ':' + (Array(2).join('0') + seconds).slice(-2)
             }
         },
         watch: {
             projectMap: function () {
                 this.projects = Array.from(this.projectMap.values())
                 if (this.curProject) {
-                    this.curProject = this.projectMap.get(this.curProject.name);
+                    this.curProject = this.projectMap.get(this.curProject.name)
                 } else {
                     this.curProject = this.projects[0]
                 }
-                this.$refs.projectTable.setCurrentRow(this.curProject);
+                this.$refs.projectTable.setCurrentRow(this.curProject)
+            },
+            curProject: function () {
+                this.curTask = this.curProject.tasks[0]
+            },
+            curTask: function () {
+                this.$refs.taskTable.setCurrentRow(this.curTask)
+                this.remainingTime = this.curTask.totalTime - this.curTask.usedTime
             }
         },
         methods: {
@@ -241,14 +205,9 @@
             updateTaskState(task, state) {
                 if (this.curTask) {
                     this.curTask.state = this.curTask.totalTime - this.curTask.usedTime > 0 ? UNCOMPLETED : COMPLETED
-                    this.projects.forEach(project => {
-                        if (project.name === this.curTask.project) {
-                            project.updateTask(task)
-                        }
-                    })
                     this.stopCountdown(this.curTask)
                 }
-                task.state = state;
+                task.state = state
                 this.curTask = task
                 this.projects.forEach(project => {
                     if (project.name === task.project) {
@@ -298,6 +257,9 @@
                 this.currentRow = val
                 this.curProject = val
             },
+            handleTaskChange(val) {
+                this.curTask = val
+            },
             projectMouseEnter(val) {
                 this.hoverProject = val
             },
@@ -313,7 +275,6 @@
                 this.showCountdown = false
                 clearInterval(this.countdownId)
                 this.$root.$store.dispatch('updateTask', task)
-                this.projects = Array.from(this.projectMap.values())
             },
             decrement() {
                 if (this.countdownTime == 0) {
@@ -322,6 +283,17 @@
                     this.curTask.usedTime += 1
                     this.countdownTime -= 1
                 }
+            },
+            formatTime(time) {
+                const hours = parseInt(time / 3600)
+                const minutes = parseInt(time / 60)
+                const seconds = time % 60
+                return (Array(2).join('0') + hours).slice(-2) + ':'
+                    + (Array(2).join('0') + minutes).slice(-2) + ':'
+                    + (Array(2).join('0') + seconds).slice(-2)
+            },
+            toggleTaskState(state) {
+                this.curTask = state
             }
         },
         data: function () {
@@ -367,10 +339,11 @@
                 hoverProject: null,
                 projects: null,
                 curProject: null,
-                curTask: null,
+                curTask: new Task('测试', new Date().getTime(), 25 * 4 * 60, 0, ''),
                 showCountdown: false,
                 countdownTime: 0,
-                countdownId: undefined
+                countdownId: undefined,
+                remainingTime: 0
             }
         }
     }
@@ -391,7 +364,7 @@
 
     .el-main {
         overflow-y: hidden;
-        padding: 1rem;
+        display: flex;
     }
 
     .grid-content {
@@ -399,5 +372,30 @@
         text-align: center;
     }
 
+    .task-panel,
+    .current-task {
+        flex: 1;
+        margin: 0 .5rem;
+        height: 100%;
+    }
+
+    .task-title {
+        text-align: center;
+        font-size: xx-large;
+    }
+
+    .countdown {
+        display: block;
+        width: 100%;
+        height: 60%;
+        margin-top: 20%;
+        text-align: center;
+        font-size: 5rem;
+    }
+
+    .task-operation {
+        width: 100%;
+        margin-top: 40%;
+    }
 
 </style>
