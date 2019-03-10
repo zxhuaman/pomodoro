@@ -22,7 +22,7 @@ export default class Project {
         this.tasksMap.set(task.name, task);
         this.total += 1;
         this.totalTime += task.totalTime;
-        if (task.state === UNCOMPLETED) {
+        if (task.state !== COMPLETED) {
             this.pending += 1;
             this.usedTime += task.usedTime;
         }
