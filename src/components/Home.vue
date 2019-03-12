@@ -203,7 +203,7 @@
                 this.$root.$store.dispatch('addTask', task)
             },
             completeTask(task) {
-                if (this.curTask) {
+                if (this.curTask && this.curTask.name !== task.name && this.curTask.state !== PROCESSING) {
                     this.stopCountdown(this.curTask)
                 }
                 task.state = COMPLETED;

@@ -62,6 +62,7 @@ export default class Project {
         }
 
         this.tasksMap.set(task.name, task)
+        this.tasks = Array.from(this.tasksMap.values());
     }
 
     completeTask(name) {

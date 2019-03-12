@@ -30,7 +30,6 @@
             <el-date-picker
                     size="mini"
                     style="margin-left: 10px"
-                    v-model="value6"
                     type="daterange"
                     range-separator="至"
                     start-placeholder="开始日期"
@@ -43,27 +42,36 @@
 
 <script>
 
-    import Gitee from "../model/gitee";
     import ECharts from 'echarts'
     import {COMPLETED} from "../model/task";
 
     export default {
         name: "Dashboard",
         mounted() {
-            Gitee.getProjects().then(projects => {
-                let completed = 0;
-                let uncompleted = 0;
-                [].concat(...projects.map(project => project.tasks))
-                    .forEach(task => task.state === COMPLETED ? completed += 1 : uncompleted += 1)
-                this.setOption(ECharts.init(this.$refs.overview),
-                    this.getOption('总览', completed, uncompleted))
-                this.setOption(ECharts.init(this.$refs.nearlyAYear),
-                    this.getOption('近一年', completed, uncompleted))
-                this.setOption(ECharts.init(this.$refs.nearlyThreeMonths),
-                    this.getOption('近三个月', completed, uncompleted))
-                this.setOption(ECharts.init(this.$refs.nearlyAWeek),
-                    this.getOption('近一星期', completed, uncompleted))
-            })
+            this.$root.$store.dispatch('getProjectMap')
+        },
+        computed: {
+            projects: function () {
+                console.log(this.$root.$store.state.projectMap)
+                return Array.from(this.$root.$store.state.projectMap.values())
+            }
+        },
+        watch:{
+          projects:function () {
+              console.log(this.projects)
+              let completed = 0;
+              let uncompleted = 0;
+              [].concat(...this.projects.map(project => project.tasks))
+                  .forEach(task => task.state === COMPLETED ? completed += 1 : uncompleted += 1)
+              this.setOption(ECharts.init(this.$refs.overview),
+                  this.getOption('总览', completed, uncompleted))
+              this.setOption(ECharts.init(this.$refs.nearlyAYear),
+                  this.getOption('近一年', completed, uncompleted))
+              this.setOption(ECharts.init(this.$refs.nearlyThreeMonths),
+                  this.getOption('近三个月', completed, uncompleted))
+              this.setOption(ECharts.init(this.$refs.nearlyAWeek),
+                  this.getOption('近一星期', completed, uncompleted))
+          }
         },
         methods: {
             getOption(title, completed, uncompleted) {
