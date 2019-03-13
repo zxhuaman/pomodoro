@@ -23,11 +23,11 @@
             </el-col>
         </el-row>
         <div style="text-align: left;margin: 0;padding-left: 10px">
-            <el-button type="text" size="mini">今天</el-button>
             <el-button type="text" size="mini">本周</el-button>
             <el-button type="text" size="mini">本月</el-button>
             <el-button type="text" size="mini">全年</el-button>
             <el-date-picker
+                    v-model="date"
                     size="mini"
                     style="margin-left: 10px"
                     type="daterange"
@@ -56,22 +56,25 @@
                 return Array.from(this.$root.$store.state.projectMap.values())
             }
         },
-        watch:{
-          projects:function () {
-              console.log(this.projects)
-              let completed = 0;
-              let uncompleted = 0;
-              [].concat(...this.projects.map(project => project.tasks))
-                  .forEach(task => task.state === COMPLETED ? completed += 1 : uncompleted += 1)
-              this.setOption(ECharts.init(this.$refs.overview),
-                  this.getOption('总览', completed, uncompleted))
-              this.setOption(ECharts.init(this.$refs.nearlyAYear),
-                  this.getOption('近一年', completed, uncompleted))
-              this.setOption(ECharts.init(this.$refs.nearlyThreeMonths),
-                  this.getOption('近三个月', completed, uncompleted))
-              this.setOption(ECharts.init(this.$refs.nearlyAWeek),
-                  this.getOption('近一星期', completed, uncompleted))
-          }
+        watch: {
+            projects: function () {
+                console.log(this.projects)
+                let completed = 0;
+                let uncompleted = 0;
+                [].concat(...this.projects.map(project => project.tasks))
+                    .forEach(task => task.state === COMPLETED ? completed += 1 : uncompleted += 1)
+                this.setOption(ECharts.init(this.$refs.overview),
+                    this.getOption('总览', completed, uncompleted))
+                this.setOption(ECharts.init(this.$refs.nearlyAYear),
+                    this.getOption('近一年', completed, uncompleted))
+                this.setOption(ECharts.init(this.$refs.nearlyThreeMonths),
+                    this.getOption('近三个月', completed, uncompleted))
+                this.setOption(ECharts.init(this.$refs.nearlyAWeek),
+                    this.getOption('近一周', completed, uncompleted))
+            },
+            date: function () {
+                console.log(this.date)
+            }
         },
         methods: {
             getOption(title, completed, uncompleted) {
@@ -106,8 +109,65 @@
                     ]
                 }
             },
+            getLineOption(title, xData, yData) {
+                return {
+                    title: {
+                        text: title
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['总任务', '已完成', '未完成']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: xData
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name: '总任务',
+                            type: 'line',
+                            stack: '总量',
+                            data: yData[0]
+                        },
+                        {
+                            name: '已完成',
+                            type: 'line',
+                            stack: '总量',
+                            data: yData[1]
+                        },
+                        {
+                            name: '未完成',
+                            type: 'line',
+                            stack: '总量',
+                            data: yData[2]
+                        }
+                    ]
+                }
+            },
             setOption(chart, option) {
                 chart.setOption(option)
+            }
+        },
+        data: function () {
+            return {
+                date: ''
             }
         }
     }
