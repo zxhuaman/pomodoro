@@ -196,7 +196,7 @@
                 this.curProject = project
             },
             deleteProject(project) {
-                this.$root.$store.dispatch('deleteProject', project)
+                this.$root.$store.dispatch('removeProject', project)
             },
             addTask(name, tomato) {
                 const task = new Task(name, new Date().getTime(), tomato * 25 * 60, 0, this.curProject.name)
@@ -336,7 +336,7 @@
                     name: [
                         {validator: checkTask, trigger: 'focus'},
                         {required: true, message: '请输入任务名称', trigger: 'focus'},
-                        {min: 2, max: 8, message: '长度在 3 到 8 个字符', trigger: 'focus'}
+                        {min: 2, max: 16, message: '长度在 3 到 16 个字符', trigger: 'focus'}
                     ]
                 },
                 currentRow: 0,

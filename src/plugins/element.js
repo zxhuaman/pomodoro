@@ -22,7 +22,7 @@ import {
     OptionGroup,
     Option,
     DatePicker,
-    Message, Footer, Tag
+    Message, Footer, Tag, RadioGroup, RadioButton
 } from 'element-ui'
 
 Vue.use(Container)
@@ -49,4 +49,6 @@ Vue.use(Option)
 Vue.use(DatePicker)
 Vue.use(Footer)
 Vue.use(Tag)
+Vue.use(RadioGroup)
+Vue.use(RadioButton)
 Vue.prototype.$message = Message

@@ -1,49 +1,52 @@
 <template>
-    <div>
-        <el-row style="width: 100%;margin: 0;" :gutter="10">
-            <el-col :span="6" style="margin: 0">
-                <el-card>
-                    <div ref="overview" style="width: 220px;height: 90px"></div>
-                </el-card>
-            </el-col>
-            <el-col :span="6" style="margin: 0">
-                <el-card>
-                    <div ref="nearlyAYear" style="width: 220px;height: 90px"></div>
-                </el-card>
-            </el-col>
-            <el-col :span="6" style="margin: 0">
-                <el-card>
-                    <div ref="nearlyThreeMonths" style="width: 220px;height: 90px"></div>
-                </el-card>
-            </el-col>
-            <el-col :span="6" style="margin: 0">
-                <el-card>
-                    <div ref="nearlyAWeek" style="width: 220px;height: 90px"></div>
-                </el-card>
-            </el-col>
-        </el-row>
-        <div style="text-align: left;margin: 0;padding-left: 10px">
-            <el-button type="text" size="mini">本周</el-button>
-            <el-button type="text" size="mini">本月</el-button>
-            <el-button type="text" size="mini">全年</el-button>
-            <el-date-picker
-                    v-model="date"
-                    size="mini"
-                    style="margin-left: 10px"
-                    type="daterange"
-                    range-separator="至"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期">
-            </el-date-picker>
-        </div>
+    <div class="statistics">
 
+        <el-card :body-style="{height:'100%',width:'100%',padding:'0'}">
+            <div id="overview" ref="overview"></div>
+        </el-card>
+
+        <el-card :body-style="{height:'100%',width:'100%',padding:'0'}">
+            <div slot="header">
+                <el-row>
+                    <el-col :span="8">
+                        <el-radio-group v-model="type">
+                            <el-radio-button label="年"></el-radio-button>
+                            <el-radio-button label="月"></el-radio-button>
+                            <el-radio-button label="周"></el-radio-button>
+                        </el-radio-group>
+                    </el-col>
+                    <el-col :span="16">
+                        <el-date-picker
+                                v-if="type==='周'"
+                                v-model="date"
+                                type="week"
+                                format="yyyy 第 WW 周"
+                                placeholder="选择周">
+                        </el-date-picker>
+                        <el-date-picker v-else-if="type==='月'"
+                                        v-model="date"
+                                        type="month"
+                                        format="yyyy 年 M 月"
+                                        placeholder="选择月">
+                        </el-date-picker>
+                        <el-date-picker
+                                v-else
+                                v-model="date"
+                                type="year"
+                                format="yyyy年"
+                                placeholder="选择年">
+                        </el-date-picker>
+                    </el-col>
+                </el-row>
+            </div>
+            <div id="details" ref="details"></div>
+        </el-card>
     </div>
 </template>
 
 <script>
 
     import ECharts from 'echarts'
-    import {COMPLETED} from "../model/task";
 
     export default {
         name: "Dashboard",
@@ -51,33 +54,66 @@
             this.$root.$store.dispatch('getProjectMap')
         },
         computed: {
-            projects: function () {
-                console.log(this.$root.$store.state.projectMap)
-                return Array.from(this.$root.$store.state.projectMap.values())
+            projectMap: function () {
+                return this.$root.$store.state.projectMap;
             }
         },
         watch: {
-            projects: function () {
-                console.log(this.projects)
-                let completed = 0;
-                let uncompleted = 0;
-                [].concat(...this.projects.map(project => project.tasks))
-                    .forEach(task => task.state === COMPLETED ? completed += 1 : uncompleted += 1)
-                this.setOption(ECharts.init(this.$refs.overview),
-                    this.getOption('总览', completed, uncompleted))
-                this.setOption(ECharts.init(this.$refs.nearlyAYear),
-                    this.getOption('近一年', completed, uncompleted))
-                this.setOption(ECharts.init(this.$refs.nearlyThreeMonths),
-                    this.getOption('近三个月', completed, uncompleted))
-                this.setOption(ECharts.init(this.$refs.nearlyAWeek),
-                    this.getOption('近一周', completed, uncompleted))
+            projectMap: function () {
+                console.log(this.projectMap)
+                const overviewData = {}
+                overviewData.legendData = []
+                overviewData.seriesData = []
+                this.projectMap.forEach((value, key) => {
+                    overviewData.legendData.push(key)
+                    overviewData.seriesData.push({name: key, value: (value.totalTime / 3600).toFixed(1)})
+                })
+                this.renderOverview(overviewData)
             },
             date: function () {
-                console.log(this.date)
-            }
+                const endDate = new Date(this.date.getTime())
+                switch (this.type) {
+                    case '年':
+                        endDate.setFullYear(endDate.getFullYear() + 1)
+                        break
+                    case '月':
+                        endDate.setMonth(endDate.getMonth() + 1)
+                        break
+                    case '周':
+                        endDate.setTime(endDate.getTime() + 1000 * 3600 * 24 * 7)
+                        break
+                    default:
+                        break
+                }
+                this.renderDetails(this.getDetailsData(this.date.getTime(), endDate.getTime()))
+            },
         },
         methods: {
-            getOption(title, completed, uncompleted) {
+            getDetailsData(startTime, endTime) {
+                const data = new Object()
+                data.legendData = ['已完成', '未完成']
+                data.xAxisData = []
+                data.usedTimeData = []
+                data.pendingTimeData = []
+
+                this.projectMap.forEach((project, key) => {
+
+                    let usedTime = 0
+                    let pendingTime = 0;
+
+                    project.tasks
+                        .filter(task => task.createTime > startTime && task.createTime < endTime)
+                        .forEach(task => {
+                            usedTime += task.usedTime
+                            pendingTime += task.totalTime - task.usedTime
+                        })
+                    data.usedTimeData.push((usedTime / 3600).toFixed(1))
+                    data.pendingTimeData.push((pendingTime / 3600).toFixed(1))
+                    data.xAxisData.push(key)
+                })
+                return data
+            },
+            getOverviewOption(title, data) {
                 return {
                     title: {
                         text: title,
@@ -85,19 +121,20 @@
                     },
                     tooltip: {
                         trigger: 'item',
-                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                        formatter: "{b} : {c}h ({d}%)"
                     },
-
+                    legend: {
+                        orient: 'vertical',
+                        right: '5%',
+                        data: data.legendData
+                    },
                     series: [
                         {
                             name: '任务数',
                             type: 'pie',
-                            radius: '45%',
-                            center: ['50%', '65%'],
-                            data: [
-                                {value: completed, name: '已完成'},
-                                {value: uncompleted, name: '未完成'},
-                            ],
+                            radius: '65%',
+                            center: ['50%', '50%'],
+                            data: data.seriesData,
                             itemStyle: {
                                 emphasis: {
                                     shadowBlur: 10,
@@ -109,74 +146,99 @@
                     ]
                 }
             },
-            getLineOption(title, xData, yData) {
+            getDetailsOption(data) {
                 return {
-                    title: {
-                        text: title
-                    },
                     tooltip: {
-                        trigger: 'axis'
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
                     },
                     legend: {
-                        data: ['总任务', '已完成', '未完成']
+                        data: data.legendData
                     },
                     grid: {
                         left: '3%',
                         right: '4%',
-                        bottom: '3%',
+                        bottom: '14%',
                         containLabel: true
-                    },
-                    toolbox: {
-                        feature: {
-                            saveAsImage: {}
-                        }
-                    },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: xData
                     },
                     yAxis: {
                         type: 'value'
                     },
+                    xAxis: {
+                        type: 'category',
+                        data: data.xAxisData
+                    },
                     series: [
                         {
-                            name: '总任务',
-                            type: 'line',
-                            stack: '总量',
-                            data: yData[0]
-                        },
-                        {
                             name: '已完成',
-                            type: 'line',
+                            type: 'bar',
                             stack: '总量',
-                            data: yData[1]
+                            label: {
+                                normal: {
+                                    position: 'insideRight'
+                                }
+                            },
+                            data: data.usedTimeData
                         },
                         {
                             name: '未完成',
-                            type: 'line',
+                            type: 'bar',
                             stack: '总量',
-                            data: yData[2]
+                            label: {
+                                normal: {
+                                    position: 'insideRight'
+                                }
+                            },
+                            data: data.pendingTimeData
                         }
                     ]
                 }
             },
-            setOption(chart, option) {
-                chart.setOption(option)
+            renderOverview(data) {
+                if (!this.overviewChart) {
+                    this.overviewChart = ECharts.init(this.$refs.overview)
+                }
+                this.overviewChart.setOption(this.getOverviewOption('总览', data))
+            },
+            renderDetails(data) {
+                if (!this.detailsChart) {
+                    this.detailsChart = ECharts.init(this.$refs.details)
+                }
+                this.detailsChart.setOption(this.getDetailsOption(data))
             }
         },
         data: function () {
             return {
-                date: ''
+                overviewChart: null,
+                detailsChart: null,
+                type: '年',
+                date: null,
+                week: null,
+                month: null,
+                year: null
             }
         }
     }
 </script>
 
 <style scoped>
-    div {
-        text-align: center;
-        margin: 1em auto;
+    .statistics {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+
+    .el-card {
+        flex: 1;
+        margin: .5rem;
+    }
+
+    #overview,
+    #details {
+        height: 100%;
+        width: 100%;
     }
 
 </style>
